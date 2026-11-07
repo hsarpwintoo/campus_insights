@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Utensils, Bus, HeartPulse, Send, Loader2 } from 'lucide-react';
+import { Building2, Utensils, Bus, HeartPulse, Send, Loader2, EyeOff } from 'lucide-react';
 import { saveFeedbackToFirestore } from '../services/firebaseDb';
 
 const LOCATION_OPTIONS = {
@@ -45,13 +45,14 @@ const CATEGORIES = [
   { id: 'Health Services', label: 'Health Services', icon: HeartPulse }
 ];
 
-export default function SubmitFeedbackPage({ onSubmitted }) {
+export default function SubmitFeedbackPage({ user, onSubmitted }) {
   const [category, setCategory] = useState('Dormitories');
   const [target, setTarget] = useState(LOCATION_OPTIONS['Dormitories'][0]);
   const [ratings, setRatings] = useState({
     facility: 5, security: 5, electric: 5, cleanliness: 5, water: 5
   });
   const [comment, setComment] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCategorySelect = (newCat) => {
@@ -74,10 +75,17 @@ export default function SubmitFeedbackPage({ onSubmitted }) {
 
     setIsSubmitting(true);
     try {
+      // Determine author name based on anonymous toggle & logged-in user profile
+      const authorName = isAnonymous 
+        ? "Anonymous MFU Student" 
+        : (user?.displayName || user?.email || "MFU Student");
+
       await saveFeedbackToFirestore({
         category,
         target,
-        author: 'MFU Student',
+        author: authorName,
+        userEmail: user?.email || null, // Stores user email for Profile history tracking
+        isAnonymous,
         ratings,
         comment
       });
@@ -188,7 +196,7 @@ export default function SubmitFeedbackPage({ onSubmitted }) {
         </div>
 
         {/* Text Feedback */}
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ display: 'block', fontSize: '0.875rem', color: '#8B0000', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.6rem' }}>
             4. Review & Recommendations
           </label>
@@ -199,6 +207,20 @@ export default function SubmitFeedbackPage({ onSubmitted }) {
             onChange={(e) => setComment(e.target.value)} 
             style={{ width: '100%', padding: '0.85rem 1rem', background: '#F8FAFC', color: '#0F172A', border: '1px solid #CBD5E1', borderRadius: '10px', fontSize: '0.95rem', fontWeight: '500', resize: 'vertical', outline: 'none' }}
           />
+        </div>
+
+        {/* Anonymous Posting Option */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '2rem', background: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+          <input 
+            type="checkbox" 
+            id="anonFeedbackToggle" 
+            checked={isAnonymous} 
+            onChange={(e) => setIsAnonymous(e.target.checked)} 
+            style={{ accentColor: '#8B0000', width: '18px', height: '18px', cursor: 'pointer' }} 
+          />
+          <label htmlFor="anonFeedbackToggle" style={{ fontSize: '0.9rem', color: '#334155', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <EyeOff size={16} color="#64748B" /> Post feedback anonymously (hide my name on Category Feed)
+          </label>
         </div>
 
         {/* Submit Button */}
@@ -224,7 +246,7 @@ export default function SubmitFeedbackPage({ onSubmitted }) {
         >
           {isSubmitting ? (
             <>
-              <Loader2 size={18} className="animate-spin" />
+              <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
               Saving to Firestore...
             </>
           ) : (

@@ -9,6 +9,13 @@ import {
   onSnapshot,
   serverTimestamp 
 } from 'firebase/firestore';
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged 
+} from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -21,6 +28,27 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+
+// Google Auth Helpers
+export const loginWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    throw error;
+  }
+};
+
+export const logoutUser = () => signOut(auth);
+
+export const subscribeToAuth = (callback) => {
+  return onAuthStateChanged(auth, (user) => {
+    callback(user);
+  });
+};
 
 // Save feedback document to Firestore
 export const saveFeedbackToFirestore = async (feedbackData) => {
