@@ -6,6 +6,7 @@ import {
   getDocs, 
   query, 
   orderBy, 
+  onSnapshot,
   serverTimestamp 
 } from 'firebase/firestore';
 
@@ -28,7 +29,6 @@ export const saveFeedbackToFirestore = async (feedbackData) => {
       ...feedbackData,
       createdAt: serverTimestamp()
     });
-    console.log('Document written to Firestore with ID: ', docRef.id);
     return docRef.id;
   } catch (error) {
     console.error('Error writing to Firestore:', error);
@@ -36,17 +36,15 @@ export const saveFeedbackToFirestore = async (feedbackData) => {
   }
 };
 
-// Fetch all feedback from Firestore
-export const fetchFeedbacksFromFirestore = async () => {
-  try {
-    const q = query(collection(db, 'campus_reviews'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
+// Real-time listener for instant Feed updates
+export const subscribeToFeedbacks = (callback) => {
+  const q = query(collection(db, 'campus_reviews'), orderBy('createdAt', 'desc'));
+  
+  return onSnapshot(q, (querySnapshot) => {
     const reviews = [];
-    
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       
-      // Convert Firestore Timestamp to readable date string YYYY-MM-DD
       let dateString = new Date().toISOString().split('T')[0];
       if (data.createdAt && typeof data.createdAt.toDate === 'function') {
         dateString = data.createdAt.toDate().toISOString().split('T')[0];
@@ -57,6 +55,28 @@ export const fetchFeedbacksFromFirestore = async () => {
         ...data,
         createdAt: dateString
       });
+    });
+    
+    callback(reviews);
+  }, (error) => {
+    console.error('Error listening to Firestore updates:', error);
+  });
+};
+
+// Standard async fetch fallback
+export const fetchFeedbacksFromFirestore = async () => {
+  try {
+    const q = query(collection(db, 'campus_reviews'), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    const reviews = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      let dateString = new Date().toISOString().split('T')[0];
+      if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+        dateString = data.createdAt.toDate().toISOString().split('T')[0];
+      }
+      reviews.push({ id: doc.id, ...data, createdAt: dateString });
     });
     
     return reviews;
