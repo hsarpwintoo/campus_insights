@@ -6,6 +6,9 @@ export default function ProfilePage({ user }) {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [userReviews, setUserReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState('');
 
   const displayUser = user ? {
     displayName: user.displayName || "MFU Student",
@@ -18,6 +21,19 @@ export default function ProfilePage({ user }) {
   };
 
   const isMfuEmail = displayUser.email?.endsWith('@lamduan.mfu.ac.th') || displayUser.email?.endsWith('@mfu.ac.th');
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    setSignOutError('');
+
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error('Sign-out failed:', error);
+      setSignOutError('We could not sign you out. Please try again.');
+      setSigningOut(false);
+    }
+  };
 
   // Load user's feedback history from Firestore real-time feed
   useEffect(() => {
@@ -83,7 +99,10 @@ export default function ProfilePage({ user }) {
           </div>
 
           <button
-            onClick={logoutUser}
+            onClick={() => {
+              setSignOutError('');
+              setShowSignOutModal(true);
+            }}
             style={{ padding: '0.6rem 1rem', background: '#FEE2E2', color: '#991B1B', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem' }}
           >
             <LogOut size={16} /> Sign Out
@@ -163,6 +182,71 @@ export default function ProfilePage({ user }) {
         )}
       </div>
 
+      {showSignOutModal && (
+        <div
+          role="presentation"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            background: 'rgba(15, 23, 42, 0.55)'
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sign-out-title"
+            aria-describedby="sign-out-description"
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              background: '#FFFFFF',
+              borderRadius: '16px',
+              padding: '1.75rem',
+              boxShadow: '0 20px 45px rgba(15, 23, 42, 0.2)'
+            }}
+          >
+            <h2 id="sign-out-title" style={{ margin: '0 0 0.65rem 0', color: '#0F172A', fontSize: '1.25rem', fontWeight: '800' }}>
+              Sign out of Campus Insight?
+            </h2>
+            <p id="sign-out-description" style={{ margin: '0', color: '#475569', fontSize: '0.925rem', lineHeight: 1.6 }}>
+              Are you sure you want to sign out? You will need to sign in again to access your account.
+            </p>
+
+            {signOutError && (
+              <p role="alert" style={{ margin: '1rem 0 0 0', color: '#991B1B', background: '#FEE2E2', borderRadius: '8px', padding: '0.75rem', fontSize: '0.85rem', lineHeight: 1.4 }}>
+                {signOutError}
+              </p>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSignOutModal(false);
+                  setSignOutError('');
+                }}
+                disabled={signingOut}
+                style={{ padding: '0.65rem 1rem', background: '#FFFFFF', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '8px', fontWeight: '700', cursor: signingOut ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                style={{ padding: '0.65rem 1rem', background: signingOut ? '#94A3B8' : '#8B0000', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: signingOut ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}
+              >
+                {signingOut ? 'Signing Out...' : 'Sign Out'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

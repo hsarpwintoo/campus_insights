@@ -92,7 +92,7 @@ export const subscribeToFeedbacks = (callback) => {
 };
 
 // Standard async fetch fallback
-export const fetchFeedbacksFromFirestore = async () => {
+export const fetchFeedbacksFromFirestore = async ({ throwOnError = false } = {}) => {
   try {
     const q = query(collection(db, 'campus_reviews'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
@@ -110,6 +110,9 @@ export const fetchFeedbacksFromFirestore = async () => {
     return reviews;
   } catch (error) {
     console.error('Error reading from Firestore:', error);
+    if (throwOnError) {
+      throw error;
+    }
     return [];
   }
 };
