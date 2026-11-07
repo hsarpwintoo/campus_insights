@@ -1,23 +1,31 @@
-/* Reset root layout constraints for full desktop view */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 :root {
-  margin: 0;
-  padding: 0;
+  --mfu-crimson: #8B0000;
+  --mfu-crimson-hover: #700000;
+  --mfu-gold: #B45309;
+  --bg-page: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F1F5F9;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --border-color: #E2E8F0;
+}
+
+* {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
   padding: 0;
-  width: 100vw;
-  min-height: 100vh;
-  overflow-x: hidden;
-  background-color: #0b0f19;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
 }
 
-#root {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  max-width: 100% !important;
+input, select, textarea, button {
+  font-family: inherit;
 }
