@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { analyzeFeedback } from '../services/insightsAnalyzer';
 import { subscribeToFeedbacks } from '../services/firebaseDb';
-import './HomePage.css';
+import './styles/HomePage.css';
 
 const CATEGORIES = [
   { id: 'Dormitories', label: 'Dormitories', icon: Building2, color: '#762316' },

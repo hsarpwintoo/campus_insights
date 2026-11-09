@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowRight, GraduationCap, Loader2, Moon, ShieldCheck, Sun } from 'lucide-react';
 import { loginWithGoogle } from '../services/firebaseDb';
-import './LoginPage.css';
+import './styles/LoginPage.css';
 
 function CampusIllustration() {
   return (

@@ -13,7 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { subscribeToFeedbacks } from '../services/firebaseDb';
-import './FeedPage.css';
+import './styles/FeedPage.css';
 
 const CATEGORIES = [
   { id: 'all', label: 'All Reviews', icon: Layers3 },

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { fetchFeedbacksFromFirestore, subscribeToFeedbacks } from '../services/firebaseDb';
 import { analyzeFeedback } from '../services/insightsAnalyzer';
-import './InsightsPage.css';
+import './styles/InsightsPage.css';
 
 const CATEGORY_ICONS = {
   Dormitories: Building2,
