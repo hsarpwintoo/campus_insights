@@ -256,6 +256,26 @@ export const toggleHelpfulFeedback = async (reviewId, userEmail) => {
       updatedAt: serverTimestamp()
     });
 
+    try {
+      const raw = localStorage.getItem('campus_cached_feedbacks');
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (Array.isArray(cached)) {
+          const idx = cached.findIndex((r) => r.id === reviewId);
+          if (idx !== -1) {
+            cached[idx] = {
+              ...cached[idx],
+              helpfulUsers: updatedUsers,
+              helpfulCount: newCount
+            };
+            localStorage.setItem('campus_cached_feedbacks', JSON.stringify(cached));
+          }
+        }
+      }
+    } catch {
+      // Ignore cache write error
+    }
+
     return {
       isHelpful: !hasVoted,
       helpfulCount: newCount

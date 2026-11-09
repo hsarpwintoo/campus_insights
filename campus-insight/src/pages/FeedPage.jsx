@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
   Building2,
@@ -139,7 +139,7 @@ export default function FeedPage({ onNavigate, user }) {
   const [reportSuccess, setReportSuccess] = useState(false);
   const [reportError, setReportError] = useState('');
   const [revealedFlagged, setRevealedFlagged] = useState(() => new Set());
-  const [votingIds, setVotingIds] = useState(() => new Set());
+  const inFlightVotesRef = useRef(new Set());
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -177,19 +177,64 @@ export default function FeedPage({ onNavigate, user }) {
       alert('Please log in with your MFU student account to vote.');
       return;
     }
-    if (votingIds.has(reviewId)) return;
+    // Prevent double-invocation while network request for this specific review is in flight
+    if (inFlightVotesRef.current.has(reviewId)) return;
 
-    setVotingIds((prev) => new Set(prev).add(reviewId));
+    const target = feed.find((r) => r.id === reviewId);
+    if (!target) return;
+
+    const currentUsers = Array.isArray(target.helpfulUsers) ? target.helpfulUsers : [];
+    const currentlyVoted = currentUsers.includes(user.email);
+    const nextVoted = !currentlyVoted;
+    const nextCount = nextVoted
+      ? (Number(target.helpfulCount) || 0) + 1
+      : Math.max(0, (Number(target.helpfulCount) || 1) - 1);
+    const nextUsers = nextVoted
+      ? [...currentUsers, user.email]
+      : currentUsers.filter((e) => e !== user.email);
+
+    // Snapshot current state for rollback in case of error
+    const previousFeed = feed;
+
+    // 1. INSTANT OPTIMISTIC UI UPDATE (<10ms):
+    // Synchronously mutate React state so the button, active state, and count respond instantly
+    setFeed((prevFeed) => {
+      const updated = prevFeed.map((item) =>
+        item.id === reviewId
+          ? {
+              ...item,
+              helpfulCount: nextCount,
+              helpfulUsers: nextUsers
+            }
+          : item
+      );
+
+      try {
+        localStorage.setItem('campus_cached_feedbacks', JSON.stringify(updated));
+      } catch {
+        // Ignore quota
+      }
+
+      return updated;
+    });
+
+    inFlightVotesRef.current.add(reviewId);
+
+    // 2. BACKGROUND PERSISTENCE TO FIRESTORE
     try {
       await toggleHelpfulFeedback(reviewId, user.email);
     } catch (err) {
       console.error('Error toggling helpful vote:', err);
+      // Revert optimistic mutation on server failure
+      setFeed(previousFeed);
+      try {
+        localStorage.setItem('campus_cached_feedbacks', JSON.stringify(previousFeed));
+      } catch {
+        // Ignore cache failure
+      }
+      alert('Unable to sync helpful vote. Please check your network connection.');
     } finally {
-      setVotingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(reviewId);
-        return next;
-      });
+      inFlightVotesRef.current.delete(reviewId);
     }
   };
 
@@ -453,7 +498,6 @@ export default function FeedPage({ onNavigate, user }) {
                     type="button"
                     className={`feed-action-btn feed-helpful-btn${hasVotedHelpful ? ' is-active' : ''}`}
                     onClick={() => handleToggleHelpful(item.id)}
-                    disabled={votingIds.has(item.id)}
                     aria-pressed={hasVotedHelpful}
                     title={hasVotedHelpful ? 'Remove helpful mark' : 'Mark this review as helpful'}
                   >
