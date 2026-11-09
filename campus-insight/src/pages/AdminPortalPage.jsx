@@ -58,10 +58,38 @@ const getRating = (ratings) => {
 
 export default function AdminPortalPage({ user, onNavigate }) {
   const [activeTab, setActiveTab] = useState('moderation'); // 'moderation' | 'feedback' | 'analytics'
-  const [reports, setReports] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [loadingReports, setLoadingReports] = useState(true);
-  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [reports, setReports] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_reports');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [reviews, setReviews] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_feedbacks');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loadingReports, setLoadingReports] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_reports');
+      return !(raw && JSON.parse(raw).length > 0);
+    } catch {
+      return true;
+    }
+  });
+  const [loadingReviews, setLoadingReviews] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_feedbacks');
+      return !(raw && JSON.parse(raw).length > 0);
+    } catch {
+      return true;
+    }
+  });
   const [error, setError] = useState('');
   const [notification, setNotification] = useState(null);
   const [processingId, setProcessingId] = useState(null);

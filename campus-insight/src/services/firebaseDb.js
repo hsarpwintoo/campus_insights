@@ -303,6 +303,19 @@ export const reportFeedback = async (reviewId, userEmail, reason, details = '') 
 
 // Subscribe to all moderation reports from feedback_reports collection
 export const subscribeToReports = (callback, onError) => {
+  // Stale-While-Revalidate: Provide cached reports instantly (0ms)
+  try {
+    const cached = localStorage.getItem('campus_cached_reports');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        callback(parsed);
+      }
+    }
+  } catch {
+    // Ignore cache parse failure
+  }
+
   const reportsQuery = query(
     collection(db, 'feedback_reports'),
     orderBy('createdAt', 'desc')
@@ -320,6 +333,13 @@ export const subscribeToReports = (callback, onError) => {
           createdAtMillis: createdAtDate ? createdAtDate.getTime() : (data.createdAtMillis || Date.now())
         };
       });
+
+      try {
+        localStorage.setItem('campus_cached_reports', JSON.stringify(reports));
+      } catch {
+        // Ignore quota limits
+      }
+
       callback(reports);
     },
     (error) => {
@@ -582,10 +602,29 @@ const normalizeLecturerReview = (documentSnapshot) => {
 };
 
 export const subscribeToLecturerReviews = (callback, onError = () => {}) => {
+  // Stale-While-Revalidate: deliver cached lecturer reviews in 0ms
+  try {
+    const raw = localStorage.getItem('campus_cached_lecturer_reviews');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        callback(parsed);
+      }
+    }
+  } catch {
+    // Ignore cache parse failure
+  }
+
   const q = query(collection(db, 'lecturer_reviews'), orderBy('createdAt', 'desc'));
 
   return onSnapshot(q, (querySnapshot) => {
-    callback(querySnapshot.docs.map(normalizeLecturerReview));
+    const reviews = querySnapshot.docs.map(normalizeLecturerReview);
+    try {
+      localStorage.setItem('campus_cached_lecturer_reviews', JSON.stringify(reviews));
+    } catch {
+      // Ignore quota
+    }
+    callback(reviews);
   }, (error) => {
     console.error('Error listening to lecturer evaluations:', error);
     onError(error);
@@ -612,12 +651,30 @@ const normalizeFeedbackDocument = (documentSnapshot) => {
   };
 };
 
-// Real-time listener for instant Feed updates
+// Real-time listener for instant Feed updates with Stale-While-Revalidate caching
 export const subscribeToFeedbacks = (callback, onError = () => {}) => {
+  // Stale-While-Revalidate: deliver cached feedbacks in 0ms!
+  try {
+    const raw = localStorage.getItem('campus_cached_feedbacks');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        callback(parsed);
+      }
+    }
+  } catch {
+    // Ignore cache parse failure
+  }
+
   const q = query(collection(db, 'campus_reviews'), orderBy('createdAt', 'desc'));
   
   return onSnapshot(q, (querySnapshot) => {
     const reviews = querySnapshot.docs.map(normalizeFeedbackDocument);
+    try {
+      localStorage.setItem('campus_cached_feedbacks', JSON.stringify(reviews));
+    } catch {
+      // Ignore quota if images exceed limit
+    }
     callback(reviews);
   }, (error) => {
     console.error('Error listening to Firestore updates:', error);

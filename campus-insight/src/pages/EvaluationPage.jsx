@@ -16,7 +16,14 @@ import './styles/EvaluationPage.css';
 
 export default function EvaluationPage({ onSelectLecturer }) {
   const [selectedSchoolId, setSelectedSchoolId] = useState(null);
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_lecturer_reviews');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
   const [error, setError] = useState('');
 
   // Search & Sorting state

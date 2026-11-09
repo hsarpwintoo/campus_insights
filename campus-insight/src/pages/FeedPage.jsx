@@ -109,8 +109,22 @@ const getRelativeTime = (timestamp) => {
 };
 
 export default function FeedPage({ onNavigate, user }) {
-  const [feed, setFeed] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [feed, setFeed] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_feedbacks');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_feedbacks');
+      return !(raw && JSON.parse(raw).length > 0);
+    } catch {
+      return true;
+    }
+  });
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');

@@ -37,8 +37,22 @@ const getInitials = (name = '') => name
   .toUpperCase() || 'S';
 
 export default function HomePage({ onNavigate, user }) {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_feedbacks');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      const raw = localStorage.getItem('campus_cached_feedbacks');
+      return !(raw && JSON.parse(raw).length > 0);
+    } catch {
+      return true;
+    }
+  });
   const [error, setError] = useState('');
   const [selectedSubLocation, setSelectedSubLocation] = useState(null);
   const [explorerLocation, setExplorerLocation] = useState('');
