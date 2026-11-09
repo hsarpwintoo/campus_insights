@@ -4,15 +4,19 @@ import {
   Award,
   Building2,
   Bus,
+  ChevronRight,
   HeartPulse,
   Loader2,
+  MapPin,
   MessageSquare,
   Plus,
   Sparkles,
   Utensils
 } from 'lucide-react';
 import { analyzeFeedback } from '../services/insightsAnalyzer';
-import { subscribeToFeedbacks } from '../services/firebaseDb';
+import { subscribeToFeedbacks, isMfuEmail } from '../services/firebaseDb';
+import { LOCATION_OPTIONS, getLocationCategory } from '../data/campusLocations';
+import SubLocationModal from '../components/SubLocationModal';
 import './styles/HomePage.css';
 
 const CATEGORIES = [
@@ -36,6 +40,8 @@ export default function HomePage({ onNavigate, user }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedSubLocation, setSelectedSubLocation] = useState(null);
+  const [explorerLocation, setExplorerLocation] = useState('');
 
   useEffect(() => {
     const unsubscribe = subscribeToFeedbacks(
@@ -75,7 +81,7 @@ export default function HomePage({ onNavigate, user }) {
     .sort((a, b) => b.average - a.average)
     .slice(0, 3);
   const studentName = user?.displayName || user?.email || 'Campus student';
-  const isMfuEmail = user?.email?.endsWith('@lamduan.mfu.ac.th') || user?.email?.endsWith('@mfu.ac.th');
+  const isMfu = isMfuEmail(user?.email);
 
   if (loading) {
     return (
@@ -110,9 +116,9 @@ export default function HomePage({ onNavigate, user }) {
           <span>
             {user?.email || 'Signed in'}
             <span className="dashboard-detail-separator">•</span>
-            <span className={isMfuEmail ? 'dashboard-status-verified' : 'dashboard-status'}>
+            <span className={isMfu ? 'dashboard-status-verified' : 'dashboard-status'}>
               <span className="dashboard-status-dot" />
-              {isMfuEmail ? 'MFU account' : 'Student account'}
+              {isMfu ? 'MFU account' : 'Student account'}
             </span>
           </span>
         </div>
@@ -206,19 +212,77 @@ export default function HomePage({ onNavigate, user }) {
           ) : (
             <div className="dashboard-location-list">
               {topLocations.map((location) => (
-                <div className="dashboard-location-row" key={location.name}>
-                  <span>{location.name}</span>
-                  <strong>{displayScore(location.average)} / 5</strong>
-                </div>
+                <button
+                  type="button"
+                  className="dashboard-location-row is-clickable"
+                  key={location.name}
+                  onClick={() => setSelectedSubLocation({
+                    location: location.name,
+                    category: getLocationCategory(location.name)
+                  })}
+                  title={`Click to inspect ${location.name} radar chart & criteria scores`}
+                >
+                  <span className="dashboard-location-name-group">
+                    <MapPin size={13} className="dashboard-pin-icon" />
+                    <span>{location.name}</span>
+                  </span>
+                  <span className="dashboard-location-score-group">
+                    <strong>{displayScore(location.average)} / 5</strong>
+                    <ChevronRight size={13} className="dashboard-chevron-icon" />
+                  </span>
+                </button>
               ))}
             </div>
           )}
+
+          {/* Sub-location Quick Explorer */}
+          <div className="dashboard-sublocation-explorer">
+            <div className="dashboard-explorer-heading">
+              <span>Inspect any location:</span>
+            </div>
+            <select
+              className="dashboard-explorer-select"
+              value={explorerLocation}
+              onChange={(e) => {
+                const loc = e.target.value;
+                if (loc) {
+                  setSelectedSubLocation({
+                    location: loc,
+                    category: getLocationCategory(loc)
+                  });
+                  setExplorerLocation('');
+                }
+              }}
+              aria-label="Select campus location to inspect radar breakdown"
+            >
+              <option value="">Choose dorm or facility (e.g. F1, F5, M-Square)...</option>
+              {Object.entries(LOCATION_OPTIONS).map(([categoryName, locs]) => (
+                <optgroup key={categoryName} label={categoryName}>
+                  {locs.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc} ({categoryName})
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
 
           <button className="dashboard-feed-button" onClick={() => onNavigate('feed')}>
             View Recent Reviews Feed <ArrowRight size={16} />
           </button>
         </article>
       </section>
+
+      {/* Sub-location Drill-down Modal */}
+      <SubLocationModal
+        isOpen={Boolean(selectedSubLocation)}
+        locationName={selectedSubLocation?.location}
+        category={selectedSubLocation?.category}
+        reviews={reviews}
+        onClose={() => setSelectedSubLocation(null)}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 }

@@ -81,6 +81,249 @@
   font-size: 0.78rem;
 }
 
+/* AI Executive Briefing Card */
+.insights-briefing-card {
+  margin-bottom: 0.95rem;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid rgba(128, 23, 15, 0.16);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #faf8f5 100%);
+  box-shadow: 0 4px 18px rgba(70, 18, 12, 0.04);
+}
+
+.insights-briefing-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.insights-briefing-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.insights-briefing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(128, 23, 15, 0.08);
+  color: #80170f;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.insights-sparkle-icon {
+  color: #b59a43;
+}
+
+.insights-briefing-title-wrap h2 {
+  margin: 0;
+  color: #141827;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.insights-briefing-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.insights-briefing-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #69778d;
+}
+
+.insights-briefing-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid #dcd7ce;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.insights-briefing-refresh-btn:hover:not(:disabled) {
+  border-color: #80170f;
+  color: #80170f;
+  background: #fff8f7;
+}
+
+.insights-briefing-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.insights-briefing-loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+  justify-content: center;
+  color: #80170f;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.insights-briefing-summary {
+  margin: 0 0 1.1rem;
+  color: #334155;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.insights-briefing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.insights-briefing-col {
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #ebe8e1;
+}
+
+.insights-briefing-col.issues-col {
+  border-left: 3px solid #80170f;
+}
+
+.insights-briefing-col.actions-col {
+  border-left: 3px solid #3b7c53;
+}
+
+.insights-column-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.issues-col .insights-column-heading {
+  color: #80170f;
+}
+
+.actions-col .insights-column-heading {
+  color: #2e6642;
+}
+
+.insights-column-heading h3 {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.insights-briefing-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insights-briefing-item {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1eee7;
+}
+
+.insights-briefing-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.insights-item-topline {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.insights-item-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: rgba(128, 23, 15, 0.1);
+  color: #80170f;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.insights-action-index {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(46, 102, 66, 0.12);
+  color: #275638;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.insights-item-title {
+  color: #0f172a;
+  font-size: 0.825rem;
+  font-weight: 700;
+}
+
+.insights-category-pill {
+  margin-left: auto;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.insights-item-desc {
+  margin: 0;
+  color: #475569;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.insights-department-tag {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.insights-department-tag strong {
+  color: #1e293b;
+}
+
+.insights-briefing-empty {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
 .insights-metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

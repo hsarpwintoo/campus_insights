@@ -315,6 +315,154 @@
   text-align: right;
 }
 
+/* Photo Evidence Upload Section */
+.feedback-photo-section {
+  position: relative;
+  padding: 1.1rem 1.6rem 1.25rem;
+  border-top: 1px solid #e4e4de;
+}
+
+.feedback-photo-instructions {
+  margin: 0.45rem 0 0.85rem;
+  color: #69778d;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.feedback-photo-dropzone {
+  display: block;
+  padding: 1.35rem 1rem;
+  border: 2px dashed #dcd7ce;
+  border-radius: 12px;
+  background: #fbfaf8;
+  cursor: pointer;
+  text-align: center;
+  transition: all 150ms ease;
+}
+
+.feedback-photo-dropzone:hover {
+  border-color: #80170f;
+  background: #fff8f7;
+}
+
+.feedback-photo-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.feedback-photo-dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.feedback-photo-icon-badge {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(128, 23, 15, 0.08);
+  color: #80170f;
+  margin-bottom: 0.25rem;
+}
+
+.feedback-photo-dropzone-content strong {
+  color: #141827;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.feedback-photo-dropzone-content span {
+  color: #718096;
+  font-size: 0.7rem;
+}
+
+.feedback-photo-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e2ddd5;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.feedback-photo-preview-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #e4e2dc;
+  flex-shrink: 0;
+}
+
+.feedback-photo-preview-info {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.feedback-photo-preview-details {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.feedback-photo-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feedback-photo-size {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.feedback-photo-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: fit-content;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.feedback-photo-remove-btn:hover {
+  background: #fca5a5;
+  color: #7f1d1d;
+}
+
+.feedback-photo-error {
+  margin: 0.5rem 0 0;
+  color: #991b1b;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
 .feedback-form-footer {
   display: flex;
   align-items: center;

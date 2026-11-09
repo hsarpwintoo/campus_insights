@@ -169,6 +169,26 @@ html[data-theme='dark'] .dashboard-location-row {
   background: #282828;
 }
 
+html[data-theme='dark'] .dashboard-location-row.is-clickable:hover {
+  background: #333333;
+  border-color: #4a4a4a;
+}
+
+html[data-theme='dark'] .dashboard-sublocation-explorer {
+  background: #252525;
+  border-color: #3d3d3d;
+}
+
+html[data-theme='dark'] .dashboard-explorer-heading span {
+  color: #a7adba;
+}
+
+html[data-theme='dark'] .dashboard-explorer-select {
+  background: #1e1e1e;
+  border-color: #3d3d3d;
+  color: #f3f4f6;
+}
+
 html[data-theme='dark'] .dashboard-progress-track {
   background: #393939;
 }
@@ -203,6 +223,22 @@ html[data-theme='dark'] .feed-search input,
 html[data-theme='dark'] .feed-author > strong,
 html[data-theme='dark'] .feed-review-location {
   color: #f3f4f6;
+}
+
+html[data-theme='dark'] .feed-review-location-btn {
+  background: #252525 !important;
+  border-color: #383838 !important;
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .feed-review-location-btn:hover {
+  background: #332624 !important;
+  border-color: #553330 !important;
+  color: #fca595 !important;
+}
+
+html[data-theme='dark'] .feed-location-pin {
+  color: #fca595 !important;
 }
 
 html[data-theme='dark'] .feed-category-tab {
@@ -349,6 +385,71 @@ html[data-theme='dark'] .evaluation-back-button {
   color: #f0a397;
 }
 
+html[data-theme='dark'] .evaluation-search-input,
+html[data-theme='dark'] .evaluation-sort-select {
+  background: #1e1e1e !important;
+  border-color: #353535 !important;
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .evaluation-search-input:focus,
+html[data-theme='dark'] .evaluation-sort-select:focus {
+  border-color: #80170f !important;
+}
+
+html[data-theme='dark'] .evaluation-search-clear {
+  background: #333333 !important;
+  color: #a7adba !important;
+}
+
+html[data-theme='dark'] .evaluation-school-pill {
+  background: #252525 !important;
+  border-color: #383838 !important;
+  color: #c4c8d0 !important;
+}
+
+html[data-theme='dark'] .evaluation-school-pill:hover {
+  background: #332624 !important;
+  border-color: #553330 !important;
+  color: #fca595 !important;
+}
+
+html[data-theme='dark'] .evaluation-school-pill.is-active {
+  background: #80170f !important;
+  border-color: #80170f !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] .lecturer-school-tag {
+  background: #352322 !important;
+  color: #fca595 !important;
+}
+
+html[data-theme='dark'] .lecturer-office-badge {
+  background: #282828 !important;
+  border-color: #383838 !important;
+  color: #d1d5db !important;
+}
+
+html[data-theme='dark'] .lecturer-email-badge {
+  background: #202020 !important;
+  border-color: #353535 !important;
+  color: #a7adba !important;
+}
+
+html[data-theme='dark'] .evaluation-empty-results {
+  background: #1e1e1e !important;
+  border-color: #353535 !important;
+}
+
+html[data-theme='dark'] .evaluation-empty-results h3 {
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .evaluation-empty-results p {
+  color: #a7adba !important;
+}
+
 html[data-theme='dark'] .evaluation-rating-list,
 html[data-theme='dark'] .evaluation-rating-row {
   border-color: #353535;
@@ -486,6 +587,51 @@ html[data-theme='dark'] .profile-signout-button {
   color: #ffc4ba !important;
 }
 
+html[data-theme='dark'] .profile-edit-btn {
+  background: #2b2b2b !important;
+  color: #e2e8f0 !important;
+  border-color: #444 !important;
+}
+
+html[data-theme='dark'] .profile-delete-btn {
+  background: #382422 !important;
+  color: #ffc4ba !important;
+  border-color: #633b38 !important;
+}
+
+html[data-theme='dark'] #edit-review-comment {
+  background: #1e1e1e !important;
+  color: #f1f5f9 !important;
+  border-color: #444 !important;
+}
+
+html[data-theme='dark'] .feedback-photo-dropzone {
+  background: #252525 !important;
+  border-color: #444 !important;
+}
+
+html[data-theme='dark'] .feedback-photo-dropzone-content strong {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme='dark'] .feedback-photo-dropzone-content span {
+  color: #94a3b8 !important;
+}
+
+html[data-theme='dark'] .feedback-photo-preview-card {
+  background: #1e1e1e !important;
+  border-color: #353535 !important;
+}
+
+html[data-theme='dark'] .feedback-photo-preview-details {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme='dark'] .feed-review-photo-btn {
+  border-color: #353535 !important;
+  background: #121212 !important;
+}
+
 html[data-theme='dark'] .login-page > div > div {
   border-color: #353535 !important;
   background: #1e1e1e !important;
@@ -508,6 +654,149 @@ html[data-theme='dark'] .login-page > div > div > div:nth-of-type(2) span {
 }
 
 html[data-theme='dark'] .login-page > div > p {
+  color: #a7adba !important;
+}
+
+/* Feed Engagement & Moderation Dark Theme */
+html[data-theme='dark'] .feed-flagged-shield {
+  background: #2b1816 !important;
+  border-color: #5c2c26 !important;
+  color: #f5b5ab !important;
+}
+
+html[data-theme='dark'] .feed-flagged-header {
+  color: #fca595 !important;
+}
+
+html[data-theme='dark'] .feed-flagged-text {
+  color: #e5c0b9 !important;
+}
+
+html[data-theme='dark'] .feed-flagged-reveal-btn {
+  background: #381f1c !important;
+  border-color: #632d25 !important;
+  color: #f8c2b8 !important;
+}
+
+html[data-theme='dark'] .feed-flagged-reveal-btn:hover {
+  background: #4a2520 !important;
+}
+
+html[data-theme='dark'] .feed-flagged-badge {
+  background: #381f1c !important;
+  border-color: #632d25 !important;
+  color: #fca595 !important;
+}
+
+html[data-theme='dark'] .feed-review-actions {
+  border-color: #353535 !important;
+}
+
+html[data-theme='dark'] .feed-action-btn {
+  background: #292929 !important;
+  border-color: #3d3d3d !important;
+  color: #c4c8d0 !important;
+}
+
+html[data-theme='dark'] .feed-action-btn:hover:not(:disabled) {
+  background: #353535 !important;
+  border-color: #4a4a4a !important;
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .feed-helpful-btn.is-active {
+  background: #3e1b18 !important;
+  border-color: #6e2720 !important;
+  color: #fca595 !important;
+}
+
+html[data-theme='dark'] .feed-helpful-btn.is-active svg {
+  color: #fca595 !important;
+}
+
+html[data-theme='dark'] .feed-report-btn {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: #858c99 !important;
+}
+
+html[data-theme='dark'] .feed-report-btn:hover:not(:disabled) {
+  background: #352322 !important;
+  border-color: #4f2e2b !important;
+  color: #fca595 !important;
+}
+
+html[data-theme='dark'] .feed-report-btn.is-reported {
+  color: #5d636f !important;
+}
+
+html[data-theme='dark'] .feed-report-dialog {
+  background: #1e1e1e !important;
+  border-color: #353535 !important;
+}
+
+html[data-theme='dark'] .feed-report-header {
+  background: #252525 !important;
+  border-color: #353535 !important;
+}
+
+html[data-theme='dark'] .feed-report-title-row h3 {
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .feed-report-close-btn {
+  color: #a7adba !important;
+}
+
+html[data-theme='dark'] .feed-report-close-btn:hover:not(:disabled) {
+  background: #333333 !important;
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .feed-report-desc {
+  color: #c4c8d0 !important;
+}
+
+html[data-theme='dark'] .feed-report-desc strong {
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .feed-report-label {
+  color: #d3d5da !important;
+}
+
+html[data-theme='dark'] .feed-report-select,
+html[data-theme='dark'] .feed-report-textarea {
+  background: #292929 !important;
+  border-color: #3d3d3d !important;
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .feed-report-select:focus,
+html[data-theme='dark'] .feed-report-textarea:focus {
+  border-color: #99281a !important;
+}
+
+html[data-theme='dark'] .feed-report-cancel-btn {
+  background: #292929 !important;
+  border-color: #3d3d3d !important;
+  color: #c4c8d0 !important;
+}
+
+html[data-theme='dark'] .feed-report-cancel-btn:hover:not(:disabled) {
+  background: #353535 !important;
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .feed-report-submit-btn {
+  background: #80170f !important;
+}
+
+html[data-theme='dark'] .feed-report-success h4 {
+  color: #f3f4f6 !important;
+}
+
+html[data-theme='dark'] .feed-report-success p {
   color: #a7adba !important;
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, GraduationCap, Loader2, Moon, ShieldCheck, Sun } from 'lucide-react';
-import { loginWithGoogle } from '../services/firebaseDb';
+import { loginWithGoogle, logoutUser, isMfuEmail } from '../services/firebaseDb';
 import './styles/LoginPage.css';
 
 function CampusIllustration() {
@@ -62,8 +62,16 @@ export default function LoginPage({ onLoginSuccess, theme, onThemeToggle }) {
     setError('');
     try {
       const loggedUser = await loginWithGoogle();
+      if (!isMfuEmail(loggedUser?.email)) {
+        await logoutUser();
+        setError(`Access restricted: Please sign in with your official MFU email address (@lamduan.mfu.ac.th or @mfu.ac.th). The account "${loggedUser?.email || 'selected'}" is not authorized.`);
+        return;
+      }
       if (onLoginSuccess) onLoginSuccess(loggedUser);
     } catch (loginError) {
+      if (loginError?.code === 'auth/popup-closed-by-user') {
+        return;
+      }
       console.error('Login failed:', loginError);
       setError('We could not sign you in. Please try again with your university Google account.');
     } finally {

@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
+  AlertTriangle,
   BarChart3,
   Building2,
+  CheckCircle2,
   HeartPulse,
+  Loader2,
   MessageSquare,
   RefreshCw,
+  Sparkles,
   Star,
   TrendingDown,
   TrendingUp,
@@ -15,6 +19,7 @@ import {
 } from 'lucide-react';
 import { fetchFeedbacksFromFirestore, subscribeToFeedbacks } from '../services/firebaseDb';
 import { analyzeFeedback } from '../services/insightsAnalyzer';
+import { fetchAiExecutiveSummary } from '../services/aiInsightsService';
 import './styles/InsightsPage.css';
 
 const CATEGORY_ICONS = {
@@ -199,12 +204,127 @@ function ComplaintCard({ topics }) {
   );
 }
 
+function ExecutiveBriefingCard({ briefing, loading, onRefresh }) {
+  const isGemini = briefing?.source === 'gemini';
+
+  return (
+    <section className="insights-briefing-card" aria-label="AI Executive Briefing">
+      <div className="insights-briefing-topbar">
+        <div className="insights-briefing-title-wrap">
+          <span className="insights-briefing-badge">
+            <Sparkles size={13} className="insights-sparkle-icon" />
+            {isGemini ? 'Gemini 1.5 Flash AI Synthesis' : 'AI Executive Briefing · Campus Voice'}
+          </span>
+          <h2>Executive Briefing for Campus Management</h2>
+        </div>
+        <div className="insights-briefing-controls">
+          {briefing?.sampleCount ? (
+            <span className="insights-briefing-count">
+              {briefing.sampleCount} student reviews analyzed
+            </span>
+          ) : null}
+          <button
+            type="button"
+            className="insights-briefing-refresh-btn"
+            onClick={onRefresh}
+            disabled={loading}
+            title="Generate fresh AI summary"
+            aria-label="Generate fresh AI summary"
+          >
+            <RefreshCw size={12} className={loading ? 'is-spinning' : ''} />
+            {loading ? 'Analyzing...' : 'Re-analyze'}
+          </button>
+        </div>
+      </div>
+
+      {loading && !briefing ? (
+        <div className="insights-briefing-loading-state">
+          <Loader2 size={24} className="is-spinning" />
+          <p>Gemini AI is analyzing student feedback comments across campus...</p>
+        </div>
+      ) : (
+        <>
+          <p className="insights-briefing-summary">
+            {briefing?.executiveSummary || "No recent student feedback comments available to synthesize."}
+          </p>
+
+          <div className="insights-briefing-grid">
+            <div className="insights-briefing-col issues-col">
+              <div className="insights-column-heading">
+                <AlertTriangle size={15} />
+                <h3>Top 3 Critical Issues Reported</h3>
+              </div>
+              {briefing?.criticalIssues?.length ? (
+                <ol className="insights-briefing-list">
+                  {briefing.criticalIssues.map((issue, idx) => (
+                    <li key={idx} className="insights-briefing-item">
+                      <div className="insights-item-topline">
+                        <span className="insights-item-index">#{idx + 1}</span>
+                        <strong className="insights-item-title">{issue.title}</strong>
+                        {issue.category && <span className="insights-category-pill">{issue.category}</span>}
+                      </div>
+                      <p className="insights-item-desc">{issue.description}</p>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="insights-briefing-empty">No critical issues logged in recent student submissions.</p>
+              )}
+            </div>
+
+            <div className="insights-briefing-col actions-col">
+              <div className="insights-column-heading">
+                <CheckCircle2 size={15} />
+                <h3>2 Actionable Recommendations for Management</h3>
+              </div>
+              {briefing?.actionableSteps?.length ? (
+                <ol className="insights-briefing-list">
+                  {briefing.actionableSteps.map((step, idx) => (
+                    <li key={idx} className="insights-briefing-item is-action">
+                      <div className="insights-item-topline">
+                        <span className="insights-action-tag">Action {idx + 1}</span>
+                        <strong className="insights-item-title">{step.title}</strong>
+                      </div>
+                      <p className="insights-item-desc">{step.action}</p>
+                      {step.targetDepartment && (
+                        <div className="insights-department-tag">
+                          <span>Target:</span> <strong>{step.targetDepartment}</strong>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="insights-briefing-empty">No actionable items required at this time.</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
 export default function InsightsPage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [briefing, setBriefing] = useState(null);
+  const [loadingBriefing, setLoadingBriefing] = useState(true);
   const insights = useMemo(() => analyzeFeedback(reviews), [reviews]);
+
+  const loadBriefing = async (currentReviews) => {
+    setLoadingBriefing(true);
+    try {
+      const summary = await fetchAiExecutiveSummary(currentReviews);
+      setBriefing(summary);
+    } catch (err) {
+      console.warn("Could not load AI briefing:", err);
+    } finally {
+      setLoadingBriefing(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = subscribeToFeedbacks(
@@ -212,11 +332,13 @@ export default function InsightsPage() {
         setReviews(updatedReviews);
         setError('');
         setLoading(false);
+        loadBriefing(updatedReviews);
       },
       (loadError) => {
         console.error('Unable to load insights feedback:', loadError);
         setError('We could not load campus feedback right now. Please try again.');
         setLoading(false);
+        setLoadingBriefing(false);
       }
     );
 
@@ -229,6 +351,7 @@ export default function InsightsPage() {
     try {
       const currentReviews = await fetchFeedbacksFromFirestore({ throwOnError: true });
       setReviews(currentReviews);
+      await loadBriefing(currentReviews);
     } catch (loadError) {
       console.error('Unable to refresh insights:', loadError);
       setError('We could not refresh campus feedback right now. Please try again.');
@@ -268,6 +391,13 @@ export default function InsightsPage() {
           <span>{error}</span>
         </div>
       )}
+
+      {/* AI-Generated Executive Briefing Card at the top */}
+      <ExecutiveBriefingCard
+        briefing={briefing}
+        loading={loadingBriefing}
+        onRefresh={() => loadBriefing(reviews)}
+      />
 
       <section className="insights-metrics-grid" aria-label="Feedback summary metrics">
         <MetricCard

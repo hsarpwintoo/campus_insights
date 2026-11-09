@@ -4,9 +4,17 @@ const RENDER_BACKEND_URL = "https://campus-insight-b9mp.onrender.com";
 const PARTNER_CLOUDFLARE_URL = "https://advising-platform.aron078.workers.dev";
 const CAMPUS_INSIGHT_KEY = import.meta.env.VITE_PARTNER_API_KEY;
 
+const requirePartnerApiKey = () => {
+  if (!CAMPUS_INSIGHT_KEY) {
+    throw new Error('VITE_PARTNER_API_KEY is not configured.');
+  }
+
+  return CAMPUS_INSIGHT_KEY;
+};
+
 export const fetchPartnerLecturer = async (uid) => {
   const response = await axios.get(`${PARTNER_CLOUDFLARE_URL}/api/partner/lecturers/${encodeURIComponent(uid)}`, {
-    headers: { 'x-api-key': CAMPUS_INSIGHT_KEY },
+    headers: { 'x-api-key': requirePartnerApiKey() },
     timeout: 5000
   });
   return response.data?.data || response.data;
@@ -15,7 +23,7 @@ export const fetchPartnerLecturer = async (uid) => {
 export const fetchPartnerSchoolLecturers = async (schoolId) => {
   const response = await axios.get(`${PARTNER_CLOUDFLARE_URL}/api/partner/lecturers`, {
     params: { schoolId },
-    headers: { 'x-api-key': CAMPUS_INSIGHT_KEY },
+    headers: { 'x-api-key': requirePartnerApiKey() },
     timeout: 5000
   });
   const lecturers = response.data?.data || response.data?.lecturers || response.data;
@@ -24,7 +32,7 @@ export const fetchPartnerSchoolLecturers = async (schoolId) => {
 
 export const fetchPartnerWeeklyAvailability = async () => {
   const response = await axios.get(`${PARTNER_CLOUDFLARE_URL}/api/partner/availability/weekly`, {
-    headers: { 'x-api-key': CAMPUS_INSIGHT_KEY },
+    headers: { 'x-api-key': requirePartnerApiKey() },
     timeout: 5000
   });
   return response.data?.data || response.data;
@@ -37,7 +45,7 @@ export const fetchLecturerAvailability = async (email) => {
   try {
     const response = await axios.get(`${PARTNER_CLOUDFLARE_URL}/api/v1/schedules`, {
       params: { email },
-      headers: { 'x-api-key': CAMPUS_INSIGHT_KEY },
+      headers: { 'x-api-key': requirePartnerApiKey() },
       timeout: 4000
     });
     return { success: true, schedules: response.data?.schedules || response.data || [] };
@@ -60,7 +68,7 @@ export const fetchLecturerAvailability = async (email) => {
 export const fetchLecturersFromBackend = async () => {
   try {
     const res = await axios.get(`${RENDER_BACKEND_URL}/api/v1/lecturers?email=john.doe@mfu.ac.th`, {
-      headers: { 'x-api-key': CAMPUS_INSIGHT_KEY }
+      headers: { 'x-api-key': requirePartnerApiKey() }
     });
     return res.data?.data ? [res.data.data] : [];
   } catch (err) {

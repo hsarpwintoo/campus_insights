@@ -1,5 +1,5 @@
 // src/components/LecturerProfile.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { fetchLecturerAvailability } from "../services/advisingApi";
 
 const FALLBACK_DATA = {

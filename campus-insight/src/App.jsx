@@ -9,7 +9,7 @@ import LoginPage from './pages/LoginPage';
 import EvaluationPage from './pages/EvaluationPage';
 import LecturerDetailPage from './pages/LecturerDetailPage';
 import LecturerEvaluationPage from './pages/LecturerEvaluationPage';
-import { subscribeToAuth, subscribeToLecturerReviews } from './services/firebaseDb';
+import { subscribeToAuth, subscribeToLecturerReviews, logoutUser, isMfuEmail } from './services/firebaseDb';
 import './App.css';
 
 const getSavedTheme = () => {
@@ -40,6 +40,12 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = subscribeToAuth((currentUser) => {
+      if (currentUser && !isMfuEmail(currentUser.email)) {
+        logoutUser().catch((err) => console.error('Sign out failed:', err));
+        setUser(null);
+        setLoadingAuth(false);
+        return;
+      }
       setUser(currentUser);
       setLoadingAuth(false);
     });
@@ -172,7 +178,7 @@ export default function App() {
       {/* Main Content Viewport */}
       <main className="dashboard-main">
         {activeTab === 'home' && <HomePage onNavigate={setActiveTab} user={user} />}
-        {activeTab === 'feed' && <FeedPage onNavigate={setActiveTab} />}
+        {activeTab === 'feed' && <FeedPage onNavigate={setActiveTab} user={user} />}
         {activeTab === 'submit' && <SubmitFeedbackPage user={user} onSubmitted={() => setActiveTab('feed')} />}
         {activeTab === 'evaluation' && !selectedLecturerContext && (
           <EvaluationPage onSelectLecturer={(school, lecturer, reviews) => setSelectedLecturerContext({ school, lecturer, reviews, view: 'detail' })} />

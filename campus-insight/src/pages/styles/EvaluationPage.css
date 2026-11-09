@@ -1,11 +1,13 @@
 .evaluation-page {
+  width: 100%;
   max-width: 980px;
   margin: 0 auto;
+  box-sizing: border-box;
   color: #20212b;
 }
 
 .evaluation-header {
-  margin-bottom: 1.7rem;
+  margin-bottom: 1.4rem;
 }
 
 .evaluation-eyebrow,
@@ -18,34 +20,41 @@
 }
 
 .evaluation-header h1 {
-  margin: 0.45rem 0 0.55rem;
-  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  margin: 0.35rem 0 0.45rem;
+  font-size: clamp(1.45rem, 3.5vw, 2.3rem);
   letter-spacing: -0.035em;
+  line-height: 1.2;
 }
 
 .evaluation-header p {
   margin: 0;
   color: #64748b;
+  font-size: clamp(0.78rem, 1.8vw, 0.9rem);
+  line-height: 1.5;
 }
 
 .evaluation-section-heading {
   display: flex;
   justify-content: space-between;
-  align-items: end;
-  gap: 1rem;
-  margin: 1.5rem 0 0.9rem;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1.4rem 0 0.85rem;
 }
 
 .evaluation-section-heading h2 {
-  margin: 0.3rem 0 0;
-  font-size: 1.25rem;
+  margin: 0.25rem 0 0;
+  font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+  letter-spacing: -0.02em;
 }
 
 .evaluation-section-heading > span {
   color: #64748b;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
+/* Card Grids: Responsive Columns */
 .school-card-grid,
 .lecturer-card-grid {
   display: grid;
@@ -71,7 +80,7 @@
 }
 
 .school-card {
-  min-height: 150px;
+  min-height: 135px;
   padding: 1.25rem;
 }
 
@@ -96,14 +105,17 @@
 
 .school-card-content,
 .lecturer-card-content {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  flex: 1;
   gap: 0.35rem;
 }
 
 .school-card-content strong,
 .lecturer-card-content strong {
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
 }
 
 .school-card-content small,
@@ -116,12 +128,13 @@
   margin-left: auto;
   color: #8b0000;
   font-size: 1.3rem;
+  flex-shrink: 0;
 }
 
 .lecturer-card {
   align-items: flex-start;
-  min-height: 150px;
-  padding: 1.1rem;
+  min-height: 140px;
+  padding: 1.05rem;
 }
 
 .lecturer-card-rating,
@@ -139,8 +152,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  margin-bottom: 0.2rem;
-  padding: 0;
+  margin-bottom: 0.5rem;
+  padding: 0.35rem 0;
   border: 0;
   background: transparent;
   color: #762316;
@@ -148,6 +161,11 @@
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
+  transition: opacity 130ms ease;
+}
+
+.evaluation-back-button:hover {
+  opacity: 0.8;
 }
 
 .evaluation-data-status {
@@ -177,6 +195,7 @@
   border: 1px solid #e4e1da;
   border-radius: 16px;
   background: #fff;
+  box-sizing: border-box;
 }
 
 .evaluation-selection-card {
@@ -213,23 +232,20 @@
 
 .lecturer-detail-card {
   display: flex;
-  gap: 1rem;
+  gap: 1.15rem;
   align-items: flex-start;
   margin-top: 1rem;
   padding: 1.35rem;
 }
 
-.lecturer-reviews-section {
-  margin-top: 1rem;
-  padding: 0 0.2rem;
-}
-
+.lecturer-reviews-section,
 .lecturer-availability-section {
-  margin-top: 1rem;
-  padding: 0 0.2rem;
+  margin-top: 1.25rem;
+  padding: 0 0.1rem;
 }
 
-.lecturer-availability-section .evaluation-section-heading {
+.lecturer-availability-section .evaluation-section-heading,
+.lecturer-reviews-section .evaluation-section-heading {
   margin-top: 0;
 }
 
@@ -241,12 +257,14 @@
 .lecturer-availability-slot {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.85rem 1rem;
   border: 1px solid #e4e1da;
   border-radius: 10px;
   background: #fff;
   font-size: 0.85rem;
+  box-sizing: border-box;
 }
 
 .lecturer-availability-slot span {
@@ -254,17 +272,14 @@
   font-weight: 700;
 }
 
-.lecturer-reviews-section .evaluation-section-heading {
-  margin-top: 0;
-}
-
 .evaluation-empty-reviews {
   margin: 0;
-  padding: 1rem;
+  padding: 1.25rem;
   border: 1px dashed #d8dce3;
   border-radius: 10px;
   color: #64748b;
   font-size: 0.85rem;
+  text-align: center;
 }
 
 .lecturer-review-list {
@@ -282,7 +297,8 @@
 .lecturer-review-card-topline {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.75rem;
   font-size: 0.82rem;
 }
 
@@ -295,6 +311,8 @@
   margin: 0.55rem 0 0;
   color: #475569;
   font-size: 0.86rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .lecturer-avatar {
@@ -308,25 +326,32 @@
   color: #8b0000;
 }
 
+.lecturer-detail-content {
+  min-width: 0;
+  flex: 1;
+}
+
 .lecturer-detail-content h1,
 .lecturer-detail-content h2,
 .evaluation-form-heading h2 {
-  margin: 0.3rem 0 0.25rem;
-  font-size: 1.25rem;
+  margin: 0.25rem 0 0.2rem;
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  letter-spacing: -0.02em;
 }
 
 .lecturer-detail-content p {
   margin: 0;
   color: #64748b;
+  font-size: 0.85rem;
 }
 
 .lecturer-contact {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.8rem 1.3rem;
-  margin-top: 0.8rem;
+  gap: 0.65rem 1.25rem;
+  margin-top: 0.75rem;
   color: #64748b;
-  font-size: 0.83rem;
+  font-size: 0.82rem;
 }
 
 .lecturer-contact span {
@@ -344,7 +369,8 @@
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  align-items: end;
+  align-items: flex-end;
+  flex-wrap: wrap;
 }
 
 .evaluation-scale {
@@ -370,15 +396,26 @@
 
 .evaluation-stars {
   display: flex;
-  gap: 0.1rem;
+  gap: 0.15rem;
 }
 
 .evaluation-stars button {
-  padding: 0.2rem;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
   border: 0;
   background: transparent;
   color: #cbd5e1;
   cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 120ms ease;
+}
+
+.evaluation-stars button:hover {
+  transform: scale(1.15);
 }
 
 .evaluation-stars button.is-active {
@@ -398,6 +435,7 @@
 
 .evaluation-comment textarea {
   resize: vertical;
+  min-height: 90px;
 }
 
 .evaluation-status {
@@ -419,7 +457,7 @@
   align-items: center;
   gap: 0.45rem;
   margin-top: 1rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1.15rem;
   border: 0;
   border-radius: 9px;
   background: #762316;
@@ -427,6 +465,12 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.evaluation-submit-button:hover:not(:disabled) {
+  background: #611e13;
+  transform: translateY(-1px);
 }
 
 .evaluation-submit-button:disabled {
@@ -434,18 +478,357 @@
   opacity: 0.65;
 }
 
-@media (max-width: 640px) {
+/* Evaluation Controls Bar: Search & Sort */
+.evaluation-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.evaluation-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.evaluation-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  color: #718096;
+  pointer-events: none;
+}
+
+.evaluation-search-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 2.2rem 0 2.45rem;
+  border: 1px solid #e4e1da;
+  border-radius: 11px;
+  background: #fbfaf8;
+  color: #20212b;
+  font: inherit;
+  font-size: 0.8rem;
+  outline: none;
+  transition: all 140ms ease;
+  box-sizing: border-box;
+}
+
+.evaluation-search-input:focus {
+  border-color: #762316;
+  box-shadow: 0 0 0 3px rgba(118, 35, 22, 0.08);
+  background: #ffffff;
+}
+
+.evaluation-search-clear {
+  position: absolute;
+  right: 0.65rem;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: #eeeae4;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.evaluation-search-clear:hover {
+  background: #e2ddd5;
+  color: #1e293b;
+}
+
+.evaluation-sort-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.evaluation-sort-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: #762316;
+  pointer-events: none;
+}
+
+.evaluation-sort-select {
+  height: 42px;
+  padding: 0 1rem 0 2.2rem;
+  border: 1px solid #e4e1da;
+  border-radius: 11px;
+  background: #fbfaf8;
+  color: #20212b;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.evaluation-sort-select:focus {
+  border-color: #762316;
+  box-shadow: 0 0 0 3px rgba(118, 35, 22, 0.08);
+}
+
+/* School Filter Pills */
+.evaluation-school-pills {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.1rem 0 0.6rem;
+  margin-bottom: 1.1rem;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.evaluation-school-pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 38px;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid #e4e1da;
+  border-radius: 10px;
+  background: #fbfaf8;
+  color: #4b5563;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 140ms ease;
+}
+
+.evaluation-school-pill:hover {
+  background: #f5f0ec;
+  border-color: #cbaba6;
+  color: #762316;
+}
+
+.evaluation-school-pill.is-active {
+  background: #762316;
+  border-color: #762316;
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(118, 35, 22, 0.18);
+}
+
+.evaluation-school-pill.is-active svg {
+  color: #ffffff;
+}
+
+/* Enhanced Lecturer Card Elements */
+.lecturer-card-name-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.lecturer-school-tag {
+  display: inline-block;
+  padding: 0.18rem 0.45rem;
+  border-radius: 6px;
+  background: #f7edea;
+  color: #762316;
+  font-size: 0.64rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lecturer-dept-line {
+  color: #64748b;
+  font-size: 0.76rem;
+  overflow-wrap: anywhere;
+}
+
+.lecturer-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.2rem 0 0.15rem;
+}
+
+.lecturer-badge-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lecturer-office-badge {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.lecturer-email-badge {
+  background: #fbfaf8;
+  color: #64748b;
+  border: 1px solid #eae7e0;
+}
+
+.evaluation-all-lecturers-divider {
+  margin-top: 1.5rem;
+}
+
+/* Empty State */
+.evaluation-empty-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border: 1px dashed #dcd8d0;
+  border-radius: 16px;
+  background: #fbfaf8;
+  gap: 0.5rem;
+}
+
+.evaluation-empty-icon {
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+
+.evaluation-empty-results h3 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.evaluation-empty-results p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.82rem;
+  max-width: 440px;
+  line-height: 1.5;
+}
+
+.evaluation-clear-search-btn {
+  margin-top: 0.5rem;
+  padding: 0.55rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background: #762316;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.77rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 130ms ease;
+}
+
+.evaluation-clear-search-btn:hover {
+  background: #611e13;
+}
+
+/* =========================================================================
+   Responsive Breakpoints: Tablets, Phones, & Small Displays
+   ========================================================================= */
+
+/* Medium Devices (Tablets, 601px - 960px) */
+@media (max-width: 960px) {
+  .school-card-grid,
+  .lecturer-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+}
+
+/* Small Devices (Phones, <= 680px) */
+@media (max-width: 680px) {
+  .evaluation-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .evaluation-sort-group {
+    width: 100%;
+  }
+
+  .evaluation-sort-select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .school-card-grid,
   .lecturer-card-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .school-card {
+    min-height: auto;
+    padding: 1.05rem;
+  }
+
+  .lecturer-card {
+    min-height: auto;
+    padding: 0.95rem;
+  }
+
+  .lecturer-card-icon,
+  .school-card-icon {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
   }
 
   .evaluation-section-heading {
-    align-items: start;
+    align-items: flex-start;
   }
 
   .evaluation-selection-card {
     grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .lecturer-detail-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.05rem;
+    gap: 0.85rem;
+  }
+
+  .lecturer-avatar {
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+  }
+
+  .lecturer-contact {
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .lecturer-contact span {
+    word-break: break-all;
+  }
+
+  .lecturer-availability-slot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .evaluation-form {
+    padding: 1.05rem;
   }
 
   .evaluation-form-heading {
@@ -454,19 +837,69 @@
 
   .evaluation-scale {
     display: block;
-    margin-top: 0.6rem;
+    margin-top: 0.5rem;
   }
 
   .evaluation-rating-row {
     grid-template-columns: 1fr auto;
+    gap: 0.65rem;
+    padding: 0.75rem 0;
   }
 
   .evaluation-rating-row strong {
     grid-column: 2;
     grid-row: 1;
+    font-size: 0.75rem;
   }
 
   .evaluation-stars {
     grid-column: 1 / -1;
+    gap: 0.25rem;
+    margin-top: 0.2rem;
+  }
+
+  .evaluation-stars button {
+    min-width: 38px;
+    min-height: 38px;
+  }
+
+  .evaluation-submit-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Extra Small Devices (Phones, <= 420px) */
+@media (max-width: 420px) {
+  .evaluation-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .evaluation-search-input {
+    font-size: 0.76rem;
+    padding-left: 2.2rem;
+  }
+
+  .evaluation-search-icon {
+    left: 0.7rem;
+  }
+
+  .evaluation-school-pill {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.65rem;
+  }
+
+  .lecturer-card-badges {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lecturer-badge-item {
+    max-width: 100%;
+  }
+
+  .evaluation-stars button svg {
+    width: 16px;
+    height: 16px;
   }
 }

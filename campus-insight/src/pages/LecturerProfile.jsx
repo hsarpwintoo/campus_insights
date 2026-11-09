@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { fetchLecturerAvailability } from '../services/advisingApi';
 
 export default function LecturerProfile({ profEmail = "john.doe@mfu.ac.th" }) {
