@@ -76,7 +76,7 @@ export default function LoginPage({ onLoginSuccess, theme, onThemeToggle }) {
   const [error, setError] = useState('');
 
   // Admin form state
-  const [adminEmail, setAdminEmail] = useState('campusadmin@mfu.ac.th');
+  const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -238,7 +238,7 @@ export default function LoginPage({ onLoginSuccess, theme, onThemeToggle }) {
                   </>
                 ) : (
                   <>
-                    Sign in with Google
+                    Sign in with Lamduan Email
                     <ArrowRight size={17} />
                   </>
                 )}
@@ -264,7 +264,7 @@ export default function LoginPage({ onLoginSuccess, theme, onThemeToggle }) {
                     required
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    placeholder="campusadmin@mfu.ac.th"
+                    placeholder="Enter admin email"
                     autoComplete="username"
                     className="login-input"
                   />
@@ -296,20 +296,7 @@ export default function LoginPage({ onLoginSuccess, theme, onThemeToggle }) {
                 </div>
               </div>
 
-              <div className="login-admin-hint-card">
-                <KeyRound size={15} />
-                <div className="login-admin-hint-text">
-                  <strong>Standard Admin Account:</strong>
-                  <code>campusadmin@mfu.ac.th</code> • <code>campus67</code>
-                </div>
-                <button
-                  type="button"
-                  className="login-quick-fill-btn"
-                  onClick={handleFillDemoAdmin}
-                >
-                  Quick Fill
-                </button>
-              </div>
+              
 
               <button
                 type="submit"
