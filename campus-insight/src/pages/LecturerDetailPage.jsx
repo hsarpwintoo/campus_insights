@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, CalendarDays, GraduationCap, Loader2, Mail, MapPin, Star } from 'lucide-react';
 import { getReviewSummary } from './evaluationUtils';
-import { fetchPartnerLecturer, fetchPartnerLecturerAvailability, fetchPartnerSchoolLecturers } from '../services/advisingApi';
+import { fetchPartnerLecturer, fetchPartnerSchoolLecturers, fetchPartnerWeeklyAvailability } from '../services/advisingApi';
 import './styles/EvaluationPage.css';
 
 export default function LecturerDetailPage({ school, lecturer, reviews, onBack, onEvaluate }) {
   const summary = getReviewSummary(reviews);
   const schoolId = school.id;
+  const lecturerId = lecturer.id;
   const [partnerLecturer, setPartnerLecturer] = useState(null);
   const [availability, setAvailability] = useState([]);
   const [isLoadingPartnerData, setIsLoadingPartnerData] = useState(true);
@@ -45,11 +46,16 @@ export default function LecturerDetailPage({ school, lecturer, reviews, onBack, 
 
   useEffect(() => {
     let isCurrent = true;
-    fetchPartnerLecturerAvailability()
+    fetchPartnerWeeklyAvailability()
       .then((data) => {
         if (!isCurrent) return;
-        const slots = data?.availability || data?.slots || data?.schedules || data;
-        setAvailability(Array.isArray(slots) ? slots : []);
+        const entries = Array.isArray(data) ? data : data?.availability || data?.data || [];
+        const lecturerEntry = entries.find((entry) => entry?.lecturer?.uid === lecturerId);
+        const lecturerSlots = (lecturerEntry?.weeklyAvailability || []).map((slot) => ({
+          ...slot,
+          uid: lecturerId
+        }));
+        setAvailability(lecturerSlots);
       })
       .catch((error) => {
         console.warn('Unable to load lecturer availability:', error.message);
@@ -62,7 +68,7 @@ export default function LecturerDetailPage({ school, lecturer, reviews, onBack, 
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [lecturerId]);
 
   const lecturerData = { ...lecturer, ...partnerLecturer };
 
@@ -85,7 +91,7 @@ export default function LecturerDetailPage({ school, lecturer, reviews, onBack, 
       </section>
       <section className="lecturer-availability-section">
         <div className="evaluation-section-heading">
-          <div><span className="evaluation-card-eyebrow">LECTURER AVAILABILITY</span><h2>Available time today</h2></div>
+          <div><span className="evaluation-card-eyebrow">LECTURER AVAILABILITY</span><h2>Weekly available time</h2></div>
           <CalendarDays size={18} />
         </div>
         {isLoadingAvailability ? (
@@ -97,9 +103,9 @@ export default function LecturerDetailPage({ school, lecturer, reviews, onBack, 
         ) : (
           <div className="lecturer-availability-list">
             {availability.map((slot, index) => (
-              <div className="lecturer-availability-slot" key={slot.id || `${slot.date || 'today'}-${slot.time || slot.startTime || index}`}>
-                <strong>{slot.time || `${slot.startTime || ''} - ${slot.endTime || ''}`}</strong>
-                <span>{slot.status || 'Available'}</span>
+              <div className="lecturer-availability-slot" key={slot.id || `${slot.dayOfWeek}-${slot.startTime}-${index}`}>
+                <strong>{getWeekdayLabel(slot.dayOfWeek)} · {slot.startTime} - {slot.endTime}</strong>
+                <span>{slot.timezone || 'Available'}</span>
               </div>
             ))}
           </div>
@@ -126,3 +132,10 @@ export default function LecturerDetailPage({ school, lecturer, reviews, onBack, 
     </div>
   );
 }
+
+const getWeekdayLabel = (dayOfWeek) => {
+  if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) return 'Weekly';
+  return new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(
+    new Date(Date.UTC(2024, 0, 7 + dayOfWeek))
+  );
+};
