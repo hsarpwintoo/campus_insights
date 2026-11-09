@@ -70,6 +70,22 @@ app.get("/api/v1/lecturers", authenticatePartner, async (req, res) => {
   }
 });
 
+app.get("/api/v1/lecturers/:uid", authenticatePartner, async (req, res) => {
+  try {
+    const lecturerDoc = await db.collection("lecturers").doc(req.params.uid).get();
+    if (!lecturerDoc.exists) {
+      return res.status(404).json({ error: "Lecturer not found" });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      data: { id: lecturerDoc.id, ...lecturerDoc.data() }
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Proxy Health Check (Bypasses Browser CORS)
 app.get("/api/v1/advising-health", async (req, res) => {
   try {

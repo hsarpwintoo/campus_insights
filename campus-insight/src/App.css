@@ -298,6 +298,56 @@ html[data-theme='dark'] .feedback-anonymous-option {
   color: #f3f4f6;
 }
 
+html[data-theme='dark'] .evaluation-page,
+html[data-theme='dark'] .lecturer-detail-card,
+html[data-theme='dark'] .evaluation-form-heading h2,
+html[data-theme='dark'] .evaluation-rating-row,
+html[data-theme='dark'] .evaluation-section-heading h2,
+html[data-theme='dark'] .school-card,
+html[data-theme='dark'] .lecturer-card,
+html[data-theme='dark'] .lecturer-review-card {
+  color: #f3f4f6;
+}
+
+html[data-theme='dark'] .evaluation-header p,
+html[data-theme='dark'] .evaluation-selection-card label > span,
+html[data-theme='dark'] .lecturer-detail-content p,
+html[data-theme='dark'] .lecturer-contact,
+html[data-theme='dark'] .evaluation-scale,
+html[data-theme='dark'] .evaluation-section-heading > span,
+html[data-theme='dark'] .school-card-content small,
+html[data-theme='dark'] .lecturer-card-content small,
+html[data-theme='dark'] .evaluation-empty-reviews,
+html[data-theme='dark'] .lecturer-review-card p {
+  color: #a7adba;
+}
+
+html[data-theme='dark'] .evaluation-selection-card,
+html[data-theme='dark'] .lecturer-detail-card,
+html[data-theme='dark'] .evaluation-form,
+html[data-theme='dark'] .evaluation-selection-card select,
+html[data-theme='dark'] .evaluation-comment textarea,
+html[data-theme='dark'] .school-card,
+html[data-theme='dark'] .lecturer-card,
+html[data-theme='dark'] .lecturer-review-card {
+  border-color: #353535;
+  background: #1e1e1e;
+  color: #f3f4f6;
+}
+
+html[data-theme='dark'] .evaluation-empty-reviews {
+  border-color: #353535;
+}
+
+html[data-theme='dark'] .evaluation-back-button {
+  color: #f0a397;
+}
+
+html[data-theme='dark'] .evaluation-rating-list,
+html[data-theme='dark'] .evaluation-rating-row {
+  border-color: #353535;
+}
+
 html[data-theme='dark'] .submit-feedback-header p,
 html[data-theme='dark'] .feedback-rating-instructions,
 html[data-theme='dark'] .feedback-comment-label {

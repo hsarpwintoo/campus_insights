@@ -2,12 +2,16 @@ import { initializeApp } from 'firebase/app';
 import { 
   getFirestore, 
   collection, 
-  addDoc, 
+  addDoc,
+  doc,
+  getDoc,
   getDocs, 
   query, 
   orderBy, 
   onSnapshot,
-  serverTimestamp 
+  serverTimestamp,
+  setDoc,
+  runTransaction
 } from 'firebase/firestore';
 import { 
   getAuth, 
@@ -62,6 +66,96 @@ export const saveFeedbackToFirestore = async (feedbackData) => {
     console.error('Error writing to Firestore:', error);
     throw error;
   }
+};
+
+export const saveLecturerReviewToFirestore = async (reviewData) => {
+  try {
+    const lecturerRef = doc(db, 'lecturers', reviewData.lecturerId);
+    const reviewRef = doc(collection(db, 'lecturer_reviews'));
+    await runTransaction(db, async (transaction) => {
+      const lecturerSnapshot = await transaction.get(lecturerRef);
+      const previousSummary = lecturerSnapshot.data()?.reviewSummary || { count: 0, criteria: {} };
+      const count = Number(previousSummary.count) || 0;
+      const criteria = Object.fromEntries(
+        Object.entries(reviewData.ratings).map(([key, score]) => {
+          const previousAverage = Number(previousSummary.criteria?.[key]) || 0;
+          return [key, Number(((previousAverage * count + score) / (count + 1)).toFixed(2))];
+        })
+      );
+      const average = Object.values(criteria).reduce((total, score) => total + score, 0) / Object.keys(criteria).length;
+
+      transaction.set(reviewRef, {
+        ...reviewData,
+        reviewId: reviewRef.id,
+        createdAt: serverTimestamp(),
+        createdAtMillis: Date.now()
+      });
+      transaction.set(lecturerRef, {
+        reviewSummary: {
+          count: count + 1,
+          average: Number(average.toFixed(2)),
+          criteria,
+          updatedAt: serverTimestamp()
+        },
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    });
+    return reviewRef.id;
+  } catch (error) {
+    console.error('Error writing lecturer evaluation to Firestore:', error);
+    throw error;
+  }
+};
+
+export const syncLecturersToFirestore = async (schools) => {
+  try {
+    await Promise.all(schools.flatMap((school) => school.lecturers.map(async (lecturer) => {
+      const lecturerRef = doc(db, 'lecturers', lecturer.id);
+      const lecturerSnapshot = await getDoc(lecturerRef);
+      await setDoc(lecturerRef, {
+        uid: lecturer.id,
+        schoolId: school.id,
+        schoolName: school.name,
+        name: lecturer.name,
+        title: lecturer.title,
+        department: lecturer.department,
+        email: lecturer.email,
+        office: lecturer.office,
+        ...(lecturerSnapshot.exists() ? {} : { reviews: lecturer.reviews }),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    })));
+  } catch (error) {
+    console.error('Error syncing lecturers to Firestore:', error);
+    throw error;
+  }
+};
+
+const normalizeLecturerReview = (documentSnapshot) => {
+  const data = documentSnapshot.data();
+  const rawTimestamp = data.createdAt;
+  const createdAtMillis = rawTimestamp && typeof rawTimestamp.toDate === 'function'
+    ? rawTimestamp.toDate().getTime()
+    : typeof rawTimestamp === 'string' || typeof rawTimestamp === 'number'
+      ? new Date(rawTimestamp).getTime()
+      : null;
+
+  return {
+    id: documentSnapshot.id,
+    ...data,
+    createdAtMillis: Number.isFinite(createdAtMillis) ? createdAtMillis : null
+  };
+};
+
+export const subscribeToLecturerReviews = (callback, onError = () => {}) => {
+  const q = query(collection(db, 'lecturer_reviews'), orderBy('createdAt', 'desc'));
+
+  return onSnapshot(q, (querySnapshot) => {
+    callback(querySnapshot.docs.map(normalizeLecturerReview));
+  }, (error) => {
+    console.error('Error listening to lecturer evaluations:', error);
+    onError(error);
+  });
 };
 
 const normalizeFeedbackDocument = (documentSnapshot) => {

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Home, MessageSquare, Plus, Sparkles, User, GraduationCap, Moon, Sun } from 'lucide-react';
+import { Home, MessageSquare, Plus, Sparkles, User, GraduationCap, Moon, Sun, ClipboardCheck } from 'lucide-react';
 import HomePage from './pages/HomePage';
 import FeedPage from './pages/FeedPage';
 import SubmitFeedbackPage from './pages/SubmitFeedbackPage';
 import InsightsPage from './pages/InsightsPage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
-import { subscribeToAuth } from './services/firebaseDb';
+import EvaluationPage from './pages/EvaluationPage';
+import LecturerDetailPage from './pages/LecturerDetailPage';
+import LecturerEvaluationPage from './pages/LecturerEvaluationPage';
+import { subscribeToAuth, subscribeToLecturerReviews } from './services/firebaseDb';
 import './App.css';
 
 const getSavedTheme = () => {
@@ -23,6 +26,8 @@ export default function App() {
   const [theme, setTheme] = useState(getSavedTheme);
   const [user, setUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [selectedLecturerContext, setSelectedLecturerContext] = useState(null);
+  const [lecturerReviews, setLecturerReviews] = useState([]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -40,6 +45,8 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => subscribeToLecturerReviews(setLecturerReviews), []);
 
   // Show neutral loading state while checking Google auth status
   if (loadingAuth) {
@@ -68,9 +75,14 @@ export default function App() {
     { id: 'home', label: 'Overview', icon: Home },
     { id: 'feed', label: 'Category Feed', icon: MessageSquare },
     { id: 'submit', label: 'Submit Feedback', icon: Plus },
+    { id: 'evaluation', label: 'Evaluation', icon: ClipboardCheck },
     { id: 'insights', label: 'AI Insights', icon: Sparkles },
     { id: 'profile', label: 'Profile & Settings', icon: User }
   ];
+  const openEvaluation = () => {
+    setSelectedLecturerContext(null);
+    setActiveTab('evaluation');
+  };
 
   return (
     <div className="dashboard-shell">
@@ -98,7 +110,7 @@ export default function App() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={item.id === 'evaluation' ? openEvaluation : () => setActiveTab(item.id)}
                   className={`dashboard-nav-button${isActive ? ' is-active' : ''}`}
                   style={{
                     width: '100%',
@@ -162,6 +174,26 @@ export default function App() {
         {activeTab === 'home' && <HomePage onNavigate={setActiveTab} user={user} />}
         {activeTab === 'feed' && <FeedPage onNavigate={setActiveTab} />}
         {activeTab === 'submit' && <SubmitFeedbackPage user={user} onSubmitted={() => setActiveTab('feed')} />}
+        {activeTab === 'evaluation' && !selectedLecturerContext && (
+          <EvaluationPage onSelectLecturer={(school, lecturer, reviews) => setSelectedLecturerContext({ school, lecturer, reviews, view: 'detail' })} />
+        )}
+        {activeTab === 'evaluation' && selectedLecturerContext?.view === 'detail' && (
+          <LecturerDetailPage
+            school={selectedLecturerContext.school}
+            lecturer={selectedLecturerContext.lecturer}
+            reviews={lecturerReviews.filter(({ lecturerId }) => lecturerId === selectedLecturerContext.lecturer.id)}
+            onBack={() => setSelectedLecturerContext(null)}
+            onEvaluate={() => setSelectedLecturerContext((current) => ({ ...current, view: 'form' }))}
+          />
+        )}
+        {activeTab === 'evaluation' && selectedLecturerContext?.view === 'form' && (
+          <LecturerEvaluationPage
+            user={user}
+            school={selectedLecturerContext.school}
+            lecturer={selectedLecturerContext.lecturer}
+            onBack={() => setSelectedLecturerContext((current) => ({ ...current, view: 'detail' }))}
+          />
+        )}
         {activeTab === 'insights' && <InsightsPage />}
         {activeTab === 'profile' && <ProfilePage user={user} />}
       </main>
