@@ -35,6 +35,7 @@ if (serviceAccount) {
 
 const db = admin.firestore();
 const app = express();
+const PARTNER_API_KEY = process.env.PARTNER_API_KEY;
 
 app.use(cors({ origin: true }));
 app.use(express.json());
@@ -42,7 +43,7 @@ app.use(express.json());
 // API Key Middleware Verification
 const authenticatePartner = (req, res, next) => {
   const apiKey = req.headers["x-api-key"];
-  if (!apiKey || apiKey !== "ADVISING_PLATFORM_SECRET_KEY") {
+  if (!PARTNER_API_KEY || !apiKey || apiKey !== PARTNER_API_KEY) {
     return res.status(401).json({ error: "Unauthorized access" });
   }
   next();
