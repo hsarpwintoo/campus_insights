@@ -50,6 +50,7 @@ npm run build
 * **Category Feedback Feed:** Live updates, category filters, and search.
 * **Community Engagement:** One-vote-per-student helpful upvotes, reporting modal, and automatic content shielding ($\ge 3$ reports).
 * **Photo Attachments:** Client-side image compression down to ~100KB, Storage upload, and full-screen lightbox zoom.
+* **Admin Portal & Moderation:** Real-time reported content queue, dismissal/takedown controls, official university facility response attachment, all-reviews search & manager, and CSV export.
 * **Lecturer Evaluation:** University-wide lecturer search (name, dept, office), multi-criteria sorting, and responsive touch UI.
 * **AI Executive Briefing:** Gemini 1.5 Flash automated issue summary.
 * **Authentication:** Google login restricted strictly to `@lamduan.mfu.ac.th` and `@mfu.ac.th`.

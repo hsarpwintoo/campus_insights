@@ -317,6 +317,47 @@
   font-style: italic;
 }
 
+/* Official University Facility Response Card */
+.feed-official-response {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 10px;
+  background: #fdfaf3;
+  border: 1px solid #e9d9b8;
+  border-left: 4px solid #b58931;
+}
+
+.feed-official-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.3rem;
+}
+
+.feed-official-icon {
+  color: #b58931;
+  flex-shrink: 0;
+}
+
+.feed-official-header strong {
+  color: #875c12;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.feed-official-date {
+  color: #9c8b74;
+  font-size: 0.68rem;
+  margin-left: auto;
+}
+
+.feed-official-text {
+  margin: 0;
+  color: #4a3e2e;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
 /* Attached Evidence Photo Styles */
 .feed-review-photo-container {
   margin-top: 0.75rem;

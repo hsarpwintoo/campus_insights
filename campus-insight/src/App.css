@@ -657,6 +657,24 @@ html[data-theme='dark'] .login-page > div > p {
   color: #a7adba !important;
 }
 
+html[data-theme='dark'] .feed-official-response {
+  background: #282114 !important;
+  border-color: #4a3c1c !important;
+  border-left-color: #d4a737 !important;
+}
+
+html[data-theme='dark'] .feed-official-header strong {
+  color: #f7d57a !important;
+}
+
+html[data-theme='dark'] .feed-official-date {
+  color: #b0a38b !important;
+}
+
+html[data-theme='dark'] .feed-official-text {
+  color: #eae4d8 !important;
+}
+
 /* Feed Engagement & Moderation Dark Theme */
 html[data-theme='dark'] .feed-flagged-shield {
   background: #2b1816 !important;

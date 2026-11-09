@@ -64,6 +64,34 @@ export const isMfuEmail = (email) => {
   return normalized.endsWith('@lamduan.mfu.ac.th') || normalized.endsWith('@mfu.ac.th');
 };
 
+// Admin authorization check
+export const isAdminUser = (email) => {
+  if (!email || typeof email !== 'string') return false;
+  const normalized = email.trim().toLowerCase();
+
+  // 1. Configurable via environment variable (comma-separated list)
+  const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (envAdmins.includes(normalized)) return true;
+
+  // 2. Built-in defaults for administration and active student developer account
+  const defaultAdmins = [
+    '6731503139@lamduan.mfu.ac.th',
+    'admin@mfu.ac.th',
+    'moderator@mfu.ac.th',
+    'facility@mfu.ac.th'
+  ];
+  if (defaultAdmins.includes(normalized)) return true;
+
+  // 3. Role-based prefix checks (e.g. admin.*@mfu.ac.th)
+  if (normalized.startsWith('admin.') || normalized.startsWith('moderator.')) return true;
+
+  return false;
+};
+
 export const subscribeToAuth = (callback) => {
   return onAuthStateChanged(auth, (user) => {
     callback(user);
@@ -188,6 +216,109 @@ export const reportFeedback = async (reviewId, userEmail, reason, details = '') 
 
     return { reportCount, isFlagged: reportCount >= 3 };
   });
+};
+
+// Subscribe to all moderation reports from feedback_reports collection
+export const subscribeToReports = (callback, onError) => {
+  const reportsQuery = query(
+    collection(db, 'feedback_reports'),
+    orderBy('createdAt', 'desc')
+  );
+
+  return onSnapshot(
+    reportsQuery,
+    (snapshot) => {
+      const reports = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        const createdAtDate = data.createdAt?.toDate ? data.createdAt.toDate() : null;
+        return {
+          id: docSnap.id,
+          ...data,
+          createdAtMillis: createdAtDate ? createdAtDate.getTime() : (data.createdAtMillis || Date.now())
+        };
+      });
+      callback(reports);
+    },
+    (error) => {
+      console.error('Error subscribing to feedback reports:', error);
+      onError?.(error);
+    }
+  );
+};
+
+// Admin resolves a report (dismiss flag or take down review)
+export const resolveFeedbackReport = async (reportId, reviewId, resolution, adminEmail, notes = '') => {
+  if (!reportId) throw new Error('Report ID is required.');
+
+  // 1. Update status on the report document
+  const reportRef = doc(db, 'feedback_reports', reportId);
+  await updateDoc(reportRef, {
+    status: resolution, // 'dismissed' | 'resolved_removed' | 'resolved_shielded'
+    resolvedBy: adminEmail || 'admin',
+    resolvedAt: serverTimestamp(),
+    notes: notes.trim()
+  });
+
+  // 2. Synchronize action with the associated review
+  if (reviewId) {
+    const reviewRef = doc(db, 'campus_reviews', reviewId);
+    try {
+      if (resolution === 'resolved_removed') {
+        // Permanently remove abusive review from feed
+        await deleteDoc(reviewRef);
+      } else if (resolution === 'dismissed') {
+        // Dismiss flag: reset report count and clear isFlagged
+        await updateDoc(reviewRef, {
+          isFlagged: false,
+          reportCount: 0,
+          updatedAt: serverTimestamp()
+        });
+      } else if (resolution === 'resolved_shielded') {
+        // Keep review shielded
+        await updateDoc(reviewRef, {
+          isFlagged: true,
+          isShieldedByAdmin: true,
+          updatedAt: serverTimestamp()
+        });
+      }
+    } catch (reviewErr) {
+      console.warn('Review might have already been deleted:', reviewErr.message);
+    }
+  }
+};
+
+// Admin adds or updates an official university facility response
+export const saveOfficialResponse = async (reviewId, responseText, adminName) => {
+  if (!reviewId) throw new Error('Review ID is required.');
+  const reviewRef = doc(db, 'campus_reviews', reviewId);
+
+  if (!responseText || !responseText.trim()) {
+    await updateDoc(reviewRef, {
+      officialResponse: null,
+      updatedAt: serverTimestamp()
+    });
+    return null;
+  }
+
+  const officialResponse = {
+    text: responseText.trim(),
+    author: adminName || 'MFU Facility Management',
+    createdAtMillis: Date.now()
+  };
+
+  await updateDoc(reviewRef, {
+    officialResponse,
+    updatedAt: serverTimestamp()
+  });
+
+  return officialResponse;
+};
+
+// Admin deletes a review directly
+export const deleteReviewAsAdmin = async (reviewId) => {
+  if (!reviewId) throw new Error('Review ID is required.');
+  const reviewRef = doc(db, 'campus_reviews', reviewId);
+  await deleteDoc(reviewRef);
 };
 
 // Client-side image downscaling and compression before upload

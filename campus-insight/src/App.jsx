@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, MessageSquare, Plus, Sparkles, User, GraduationCap, Moon, Sun, ClipboardCheck } from 'lucide-react';
+import { Home, MessageSquare, Plus, Sparkles, User, GraduationCap, Moon, Sun, ClipboardCheck, ShieldCheck } from 'lucide-react';
 import HomePage from './pages/HomePage';
 import FeedPage from './pages/FeedPage';
 import SubmitFeedbackPage from './pages/SubmitFeedbackPage';
@@ -9,7 +9,8 @@ import LoginPage from './pages/LoginPage';
 import EvaluationPage from './pages/EvaluationPage';
 import LecturerDetailPage from './pages/LecturerDetailPage';
 import LecturerEvaluationPage from './pages/LecturerEvaluationPage';
-import { subscribeToAuth, subscribeToLecturerReviews, logoutUser, isMfuEmail } from './services/firebaseDb';
+import AdminPortalPage from './pages/AdminPortalPage';
+import { subscribeToAuth, subscribeToLecturerReviews, logoutUser, isMfuEmail, isAdminUser } from './services/firebaseDb';
 import './App.css';
 
 const getSavedTheme = () => {
@@ -77,12 +78,14 @@ export default function App() {
   }
 
   // 2. MAIN DASHBOARD (Only visible after signing in)
+  const isAdmin = isAdminUser(user?.email);
   const navItems = [
     { id: 'home', label: 'Overview', icon: Home },
     { id: 'feed', label: 'Category Feed', icon: MessageSquare },
     { id: 'submit', label: 'Submit Feedback', icon: Plus },
     { id: 'evaluation', label: 'Evaluation', icon: ClipboardCheck },
     { id: 'insights', label: 'AI Insights', icon: Sparkles },
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin Portal', icon: ShieldCheck }] : []),
     { id: 'profile', label: 'Profile & Settings', icon: User }
   ];
   const openEvaluation = () => {
@@ -201,6 +204,7 @@ export default function App() {
           />
         )}
         {activeTab === 'insights' && <InsightsPage />}
+        {activeTab === 'admin' && (isAdmin ? <AdminPortalPage user={user} onNavigate={setActiveTab} /> : <HomePage onNavigate={setActiveTab} user={user} />)}
         {activeTab === 'profile' && <ProfilePage user={user} />}
       </main>
 

@@ -59,6 +59,15 @@
 * **Delete with Confirmation:** Students can delete their past submissions via a confirmation modal.
 * **Inline Comment Editing:** Allows students to update their written reviews directly.
 
+### 10. 🛡️ University Admin Portal & Moderation (`AdminPortalPage.jsx`)
+* **Content Moderation Queue:** Live queue of flagged student comments from `feedback_reports`. Facility administrators can review the reporter's email, report reason, timestamp, and review content. Administrators can take action in one click:
+  * **Dismiss False Alarm:** Unshields the review on the student feed and resets flag counters.
+  * **Take Down Abusive Review:** Permanently removes offensive content and inappropriate photos from Firestore.
+* **Official University Facility Responses:** Campus facility managers and administrators can attach verified official responses to student complaints (e.g., *"Campus maintenance inspected room on Nov 10. Repair scheduled."*). These render prominently on public review cards in `FeedPage.jsx` with an executive warm gold badge.
+* **Campus Feedback Manager:** Search and filter all reviews across categories, statuses (*Flagged / Shielded*, *Has Official Response*, *Has Photo Evidence*), with direct deletion and response editing.
+* **Moderation Audit & CSV Data Intelligence:** Executive KPI summaries (Pending Reports, Total Reviews, Facility Responses, Resolved Issues) plus **1-click CSV export** of all campus feedback and moderation audit history for university administration reporting.
+* **Role-Based Access Control Gate (`isAdminUser`):** The Admin Portal tab in the navigation bar is strictly restricted to verified facility administrators, MFU admin emails, or configured emails in `VITE_ADMIN_EMAILS`. Regular students receive an access-denied screen and automatically return to the student dashboard.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -90,13 +99,14 @@ campus_insights/
 │   │   │   └── lecturers.js        # School, faculty, department, office data
 │   │   ├── pages/
 │   │   │   ├── HomePage.jsx        # Main executive analytics dashboard
-│   │   │   ├── FeedPage.jsx        # Real-time category reviews feed with moderation
+│   │   │   ├── FeedPage.jsx        # Real-time category reviews feed with moderation & official responses
 │   │   │   ├── SubmitFeedbackPage.jsx # Multi-step rating & photo upload form
 │   │   │   ├── EvaluationPage.jsx  # Lecturer evaluation search, sort & school filtering
 │   │   │   ├── LecturerDetailPage.jsx # Individual faculty profile & availability
 │   │   │   ├── LecturerEvaluationPage.jsx # Rating form for lecturers
 │   │   │   ├── InsightsPage.jsx    # Analytics charts & AI executive briefing card
 │   │   │   ├── ProfilePage.jsx     # Student profile & review management (edit/delete)
+│   │   │   ├── AdminPortalPage.jsx # Moderation queue, official responses, review manager & CSV export
 │   │   │   └── LoginPage.jsx       # Google login with MFU email verification
 │   │   ├── services/
 │   │   │   ├── firebaseDb.js       # Firestore, Auth, Storage & client image compression
@@ -143,6 +153,7 @@ VITE_FIREBASE_API_KEY=your_firebase_api_key
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 VITE_PARTNER_API_KEY=optional_partner_api_key
+VITE_ADMIN_EMAILS=admin@mfu.ac.th,facility@mfu.ac.th
 ```
 
 ### 4. Running the Development Server
@@ -165,9 +176,9 @@ npm run build
 ## 🗄️ Firestore Collections Schema
 
 * `campus_reviews`: Student ratings and comments across campus facilities.
-  * Fields: `category`, `target`, `ratings` (object), `comment`, `author`, `userEmail`, `isAnonymous`, `imageUrl`, `helpfulCount`, `helpfulUsers` (array), `reportCount`, `reportedUsers` (array), `isFlagged` (boolean), `createdAt`, `createdAtMillis`.
+  * Fields: `category`, `target`, `ratings` (object), `comment`, `author`, `userEmail`, `isAnonymous`, `imageUrl`, `helpfulCount`, `helpfulUsers` (array), `reportCount`, `reportedUsers` (array), `isFlagged` (boolean), `officialResponse` (`{ text, author, createdAtMillis }`), `createdAt`, `createdAtMillis`.
 * `feedback_reports`: Content moderation audit logs.
-  * Fields: `reviewId`, `reporterEmail`, `reason`, `details`, `status`, `createdAt`.
+  * Fields: `reviewId`, `reporterEmail`, `reason`, `details`, `status` (`pending`, `dismissed`, `resolved_removed`), `resolvedBy`, `resolvedAt`, `notes`, `createdAt`, `createdAtMillis`.
 * `lecturers`: Faculty member records and synchronized review metrics.
   * Fields: `id`, `name`, `title`, `department`, `office`, `email`, `schoolId`, `reviewSummary`.
 * `lecturer_reviews`: Evaluations submitted for lecturers.

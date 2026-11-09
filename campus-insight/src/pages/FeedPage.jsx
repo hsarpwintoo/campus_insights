@@ -399,6 +399,20 @@ export default function FeedPage({ onNavigate, user }) {
                         </button>
                       </div>
                     )}
+
+                    {/* Official University Facility Response */}
+                    {item.officialResponse?.text && (
+                      <div className="feed-official-response">
+                        <div className="feed-official-header">
+                          <Building2 size={13} className="feed-official-icon" />
+                          <strong>{item.officialResponse.author || 'MFU Facility Management Response'}</strong>
+                          <span className="feed-official-date">
+                            {getRelativeTime(item.officialResponse.createdAtMillis)}
+                          </span>
+                        </div>
+                        <p className="feed-official-text">{item.officialResponse.text}</p>
+                      </div>
+                    )}
                   </>
                 )}
 
