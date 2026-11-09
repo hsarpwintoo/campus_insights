@@ -7,9 +7,9 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
-  ExternalLink,
   FileSpreadsheet,
   Loader2,
+  Maximize2,
   MessageSquare,
   Search,
   Send,
@@ -103,8 +103,26 @@ export default function AdminPortalPage({ user, onNavigate }) {
   // Modals state
   const [responseModal, setResponseModal] = useState(null); // { review, text }
   const [deleteModal, setDeleteModal] = useState(null); // review
+  const [previewImage, setPreviewImage] = useState(null); // { url, title, author, email }
   const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Close modals on ESC key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (previewImage) {
+          setPreviewImage(null);
+        } else if (responseModal && !isSubmittingResponse) {
+          setResponseModal(null);
+        } else if (deleteModal && !isDeleting) {
+          setDeleteModal(null);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewImage, responseModal, isSubmittingResponse, deleteModal, isDeleting]);
 
   const isAdmin = isAdminUser(user?.email);
 
@@ -566,14 +584,38 @@ export default function AdminPortalPage({ user, onNavigate }) {
 
                           {targetReview.imageUrl && (
                             <div className="admin-review-photo-preview">
-                              <a
-                                href={targetReview.imageUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="admin-photo-link"
+                              <div className="admin-evidence-label-row">
+                                <span className="admin-evidence-label">
+                                  <Camera size={13} /> Attached Student Photo Evidence
+                                </span>
+                                <span className="admin-evidence-hint">Click image to inspect in high resolution</span>
+                              </div>
+                              <button
+                                type="button"
+                                className="admin-evidence-thumb-btn"
+                                onClick={() =>
+                                  setPreviewImage({
+                                    url: targetReview.imageUrl,
+                                    title: `${targetReview.category} • ${targetReview.target}`,
+                                    author: targetReview.isAnonymous
+                                      ? 'Anonymous Student'
+                                      : targetReview.author,
+                                    email: targetReview.userEmail || null
+                                  })
+                                }
+                                title="Click to enlarge student evidence photo"
                               >
-                                <Camera size={13} /> View Attached Evidence Photo <ExternalLink size={12} />
-                              </a>
+                                <img
+                                  src={targetReview.imageUrl}
+                                  alt={`Evidence for ${targetReview.target}`}
+                                  className="admin-evidence-thumb-img"
+                                  loading="lazy"
+                                />
+                                <div className="admin-evidence-thumb-overlay">
+                                  <Maximize2 size={16} />
+                                  <span>Enlarge Photo</span>
+                                </div>
+                              </button>
                             </div>
                           )}
 
@@ -790,9 +832,21 @@ export default function AdminPortalPage({ user, onNavigate }) {
                           </span>
                         )}
                         {item.imageUrl && (
-                          <span className="admin-tag-photo">
+                          <button
+                            type="button"
+                            className="admin-tag-photo admin-tag-photo-btn"
+                            onClick={() =>
+                              setPreviewImage({
+                                url: item.imageUrl,
+                                title: `${item.category} • ${item.target}`,
+                                author: item.isAnonymous ? 'Anonymous Student' : item.author,
+                                email: item.userEmail || null
+                              })
+                            }
+                            title="Click to view full size photo"
+                          >
                             <Camera size={11} /> Photo Evidence
-                          </span>
+                          </button>
                         )}
                       </div>
 
@@ -809,6 +863,36 @@ export default function AdminPortalPage({ user, onNavigate }) {
                       <p className="admin-feedback-text">
                         {item.comment?.trim() || <em>No written comment provided.</em>}
                       </p>
+
+                      {/* Display Evidence Photo Thumbnail */}
+                      {item.imageUrl && (
+                        <div className="admin-feedback-photo-row">
+                          <button
+                            type="button"
+                            className="admin-feedback-thumb-btn"
+                            onClick={() =>
+                              setPreviewImage({
+                                url: item.imageUrl,
+                                title: `${item.category} • ${item.target}`,
+                                author: item.isAnonymous ? 'Anonymous Student' : item.author,
+                                email: item.userEmail || null
+                              })
+                            }
+                            title="Click to inspect photo evidence"
+                          >
+                            <img
+                              src={item.imageUrl}
+                              alt={`Evidence photo for ${item.target}`}
+                              className="admin-feedback-row-thumb"
+                              loading="lazy"
+                            />
+                            <span className="admin-feedback-thumb-label">
+                              <Maximize2 size={12} />
+                              <span>View Evidence Photo</span>
+                            </span>
+                          </button>
+                        </div>
+                      )}
 
                       {/* Display Official Response if attached */}
                       {hasOfficial && (
@@ -990,6 +1074,35 @@ export default function AdminPortalPage({ user, onNavigate }) {
               <div className="admin-response-preview-box">
                 <small>Responding to review for <strong>{responseModal.review.target}</strong> ({responseModal.review.category}):</small>
                 <p>&ldquo;{responseModal.review.comment || 'Star rating submitted'}&rdquo;</p>
+                {responseModal.review.imageUrl && (
+                  <div className="admin-response-photo-preview">
+                    <button
+                      type="button"
+                      className="admin-response-photo-btn"
+                      onClick={() =>
+                        setPreviewImage({
+                          url: responseModal.review.imageUrl,
+                          title: `${responseModal.review.category} • ${responseModal.review.target}`,
+                          author: responseModal.review.isAnonymous
+                            ? 'Anonymous Student'
+                            : responseModal.review.author,
+                          email: responseModal.review.userEmail || null
+                        })
+                      }
+                      title="Click to enlarge student photo evidence"
+                    >
+                      <img
+                        src={responseModal.review.imageUrl}
+                        alt={`Student evidence for ${responseModal.review.target}`}
+                        className="admin-response-photo-thumb"
+                      />
+                      <span className="admin-response-photo-text">
+                        <Camera size={13} />
+                        <span>Student Photo Evidence Attached &bull; Click to zoom</span>
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="admin-field">
@@ -1082,6 +1195,35 @@ export default function AdminPortalPage({ user, onNavigate }) {
               <div className="admin-response-preview-box">
                 <small>Review Comment:</small>
                 <p>&ldquo;{deleteModal.comment || 'Star rating submitted'}&rdquo;</p>
+                {deleteModal.imageUrl && (
+                  <div className="admin-response-photo-preview">
+                    <button
+                      type="button"
+                      className="admin-response-photo-btn"
+                      onClick={() =>
+                        setPreviewImage({
+                          url: deleteModal.imageUrl,
+                          title: `${deleteModal.category} • ${deleteModal.target}`,
+                          author: deleteModal.isAnonymous
+                            ? 'Anonymous Student'
+                            : deleteModal.author,
+                          email: deleteModal.userEmail || null
+                        })
+                      }
+                      title="Click to view attached student photo"
+                    >
+                      <img
+                        src={deleteModal.imageUrl}
+                        alt={`Evidence for ${deleteModal.target}`}
+                        className="admin-response-photo-thumb"
+                      />
+                      <span className="admin-response-photo-text">
+                        <Camera size={13} />
+                        <span>Attached Photo Evidence &bull; Click to zoom</span>
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="admin-modal-actions">
@@ -1108,6 +1250,55 @@ export default function AdminPortalPage({ user, onNavigate }) {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          LIGHTBOX MODAL: FULL RESOLUTION EVIDENCE PHOTO INSPECTOR
+         ========================================================================= */}
+      {previewImage && (
+        <div
+          role="presentation"
+          className="admin-lightbox-backdrop"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Student photo evidence inspection"
+            className="admin-lightbox-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="admin-lightbox-close"
+              onClick={() => setPreviewImage(null)}
+              aria-label="Close photo preview"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="admin-lightbox-frame">
+              <img
+                src={previewImage.url}
+                alt={previewImage.title || 'Student photo evidence'}
+                className="admin-lightbox-img"
+              />
+            </div>
+
+            <div className="admin-lightbox-meta">
+              <div className="admin-lightbox-title">
+                <Camera size={15} />
+                <strong>{previewImage.title}</strong>
+              </div>
+              {previewImage.author && (
+                <div className="admin-lightbox-author">
+                  <span>Author: <strong>{previewImage.author}</strong></span>
+                  {previewImage.email && <small> ({previewImage.email})</small>}
+                </div>
+              )}
             </div>
           </div>
         </div>
