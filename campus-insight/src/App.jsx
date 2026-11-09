@@ -10,7 +10,14 @@ import EvaluationPage from './pages/EvaluationPage';
 import LecturerDetailPage from './pages/LecturerDetailPage';
 import LecturerEvaluationPage from './pages/LecturerEvaluationPage';
 import AdminPortalPage from './pages/AdminPortalPage';
-import { subscribeToAuth, subscribeToLecturerReviews, logoutUser, isMfuEmail, isAdminUser } from './services/firebaseDb';
+import {
+  subscribeToAuth,
+  subscribeToLecturerReviews,
+  logoutUser,
+  isMfuEmail,
+  isAdminUser,
+  getSavedAdminSession
+} from './services/firebaseDb';
 import './App.css';
 
 const getSavedTheme = () => {
@@ -23,7 +30,10 @@ const getSavedTheme = () => {
 };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedAdmin = getSavedAdminSession();
+    return savedAdmin ? 'admin' : 'home';
+  });
   const [theme, setTheme] = useState(getSavedTheme);
   const [user, setUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
@@ -48,6 +58,9 @@ export default function App() {
         return;
       }
       setUser(currentUser);
+      if (currentUser && isAdminUser(currentUser.email)) {
+        setActiveTab('admin');
+      }
       setLoadingAuth(false);
     });
     return () => unsubscribe();
@@ -69,7 +82,13 @@ export default function App() {
     return (
       <div className="login-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F8FAFC', width: '100vw', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
         <LoginPage
-          onLoginSuccess={() => setActiveTab('home')}
+          onLoginSuccess={(loggedUser) => {
+            if (isAdminUser(loggedUser?.email)) {
+              setActiveTab('admin');
+            } else {
+              setActiveTab('home');
+            }
+          }}
           theme={theme}
           onThemeToggle={() => setTheme((currentTheme) => currentTheme === 'dark' ? 'light' : 'dark')}
         />
@@ -79,15 +98,24 @@ export default function App() {
 
   // 2. MAIN DASHBOARD (Only visible after signing in)
   const isAdmin = isAdminUser(user?.email);
-  const navItems = [
+
+  // Admin users can only see admin-relevant sections: Admin Portal, AI Executive Briefing, Account & Settings
+  const adminNavItems = [
+    { id: 'admin', label: 'Admin Portal', icon: ShieldCheck },
+    { id: 'insights', label: 'AI Executive Briefing', icon: Sparkles },
+    { id: 'profile', label: 'Account & Settings', icon: User }
+  ];
+
+  const studentNavItems = [
     { id: 'home', label: 'Overview', icon: Home },
     { id: 'feed', label: 'Category Feed', icon: MessageSquare },
     { id: 'submit', label: 'Submit Feedback', icon: Plus },
     { id: 'evaluation', label: 'Evaluation', icon: ClipboardCheck },
     { id: 'insights', label: 'AI Insights', icon: Sparkles },
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin Portal', icon: ShieldCheck }] : []),
     { id: 'profile', label: 'Profile & Settings', icon: User }
   ];
+
+  const navItems = isAdmin ? adminNavItems : studentNavItems;
   const openEvaluation = () => {
     setSelectedLecturerContext(null);
     setActiveTab('evaluation');
@@ -103,11 +131,13 @@ export default function App() {
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '2.5rem', padding: '0 0.25rem' }}>
             <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, #8B0000 0%, #A71930 100%)', display: 'grid', placeItems: 'center', color: '#FFFFFF', boxShadow: '0 4px 12px rgba(139, 0, 0, 0.25)' }}>
-              <GraduationCap size={24} strokeWidth={2.2} />
+              {isAdmin ? <ShieldCheck size={24} strokeWidth={2.2} /> : <GraduationCap size={24} strokeWidth={2.2} />}
             </div>
             <div>
               <h2 style={{ fontSize: '1.1rem', fontWeight: '800', margin: 0, color: '#0F172A', letterSpacing: '-0.02em' }}>Campus Insight</h2>
-              <span style={{ fontSize: '0.75rem', color: '#8B0000', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mae Fah Luang Univ.</span>
+              <span style={{ fontSize: '0.75rem', color: '#8B0000', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {isAdmin ? 'Facility Admin' : 'Mae Fah Luang Univ.'}
+              </span>
             </div>
           </div>
 
@@ -161,8 +191,12 @@ export default function App() {
               </div>
             )}
             <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.displayName || 'MFU Student'}</div>
-              <div style={{ fontSize: '0.725rem', color: '#64748B' }}>View Profile</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user.displayName || (isAdmin ? 'Campus Admin' : 'MFU Student')}
+              </div>
+              <div style={{ fontSize: '0.725rem', color: '#64748B' }}>
+                {isAdmin ? 'Admin Settings' : 'View Profile'}
+              </div>
             </div>
           </button>
           <button
@@ -180,32 +214,44 @@ export default function App() {
 
       {/* Main Content Viewport */}
       <main className="dashboard-main">
-        {activeTab === 'home' && <HomePage onNavigate={setActiveTab} user={user} />}
-        {activeTab === 'feed' && <FeedPage onNavigate={setActiveTab} user={user} />}
-        {activeTab === 'submit' && <SubmitFeedbackPage user={user} onSubmitted={() => setActiveTab('feed')} />}
-        {activeTab === 'evaluation' && !selectedLecturerContext && (
-          <EvaluationPage onSelectLecturer={(school, lecturer, reviews) => setSelectedLecturerContext({ school, lecturer, reviews, view: 'detail' })} />
+        {isAdmin ? (
+          <>
+            {activeTab === 'admin' && <AdminPortalPage user={user} onNavigate={setActiveTab} />}
+            {activeTab === 'insights' && <InsightsPage />}
+            {activeTab === 'profile' && <ProfilePage user={user} onNavigate={setActiveTab} />}
+            {!['admin', 'insights', 'profile'].includes(activeTab) && (
+              <AdminPortalPage user={user} onNavigate={setActiveTab} />
+            )}
+          </>
+        ) : (
+          <>
+            {activeTab === 'home' && <HomePage onNavigate={setActiveTab} user={user} />}
+            {activeTab === 'feed' && <FeedPage onNavigate={setActiveTab} user={user} />}
+            {activeTab === 'submit' && <SubmitFeedbackPage user={user} onSubmitted={() => setActiveTab('feed')} />}
+            {activeTab === 'evaluation' && !selectedLecturerContext && (
+              <EvaluationPage onSelectLecturer={(school, lecturer, reviews) => setSelectedLecturerContext({ school, lecturer, reviews, view: 'detail' })} />
+            )}
+            {activeTab === 'evaluation' && selectedLecturerContext?.view === 'detail' && (
+              <LecturerDetailPage
+                school={selectedLecturerContext.school}
+                lecturer={selectedLecturerContext.lecturer}
+                reviews={lecturerReviews.filter(({ lecturerId }) => lecturerId === selectedLecturerContext.lecturer.id)}
+                onBack={() => setSelectedLecturerContext(null)}
+                onEvaluate={() => setSelectedLecturerContext((current) => ({ ...current, view: 'form' }))}
+              />
+            )}
+            {activeTab === 'evaluation' && selectedLecturerContext?.view === 'form' && (
+              <LecturerEvaluationPage
+                user={user}
+                school={selectedLecturerContext.school}
+                lecturer={selectedLecturerContext.lecturer}
+                onBack={() => setSelectedLecturerContext((current) => ({ ...current, view: 'detail' }))}
+              />
+            )}
+            {activeTab === 'insights' && <InsightsPage />}
+            {activeTab === 'profile' && <ProfilePage user={user} onNavigate={setActiveTab} />}
+          </>
         )}
-        {activeTab === 'evaluation' && selectedLecturerContext?.view === 'detail' && (
-          <LecturerDetailPage
-            school={selectedLecturerContext.school}
-            lecturer={selectedLecturerContext.lecturer}
-            reviews={lecturerReviews.filter(({ lecturerId }) => lecturerId === selectedLecturerContext.lecturer.id)}
-            onBack={() => setSelectedLecturerContext(null)}
-            onEvaluate={() => setSelectedLecturerContext((current) => ({ ...current, view: 'form' }))}
-          />
-        )}
-        {activeTab === 'evaluation' && selectedLecturerContext?.view === 'form' && (
-          <LecturerEvaluationPage
-            user={user}
-            school={selectedLecturerContext.school}
-            lecturer={selectedLecturerContext.lecturer}
-            onBack={() => setSelectedLecturerContext((current) => ({ ...current, view: 'detail' }))}
-          />
-        )}
-        {activeTab === 'insights' && <InsightsPage />}
-        {activeTab === 'admin' && (isAdmin ? <AdminPortalPage user={user} onNavigate={setActiveTab} /> : <HomePage onNavigate={setActiveTab} user={user} />)}
-        {activeTab === 'profile' && <ProfilePage user={user} />}
       </main>
 
     </div>

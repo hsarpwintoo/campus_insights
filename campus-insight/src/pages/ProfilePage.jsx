@@ -4,11 +4,12 @@ import {
   logoutUser,
   subscribeToFeedbacks,
   isMfuEmail,
+  isAdminUser,
   deleteFeedbackFromFirestore,
   updateFeedbackInFirestore
 } from '../services/firebaseDb';
 
-export default function ProfilePage({ user }) {
+export default function ProfilePage({ user, onNavigate }) {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [userReviews, setUserReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -152,11 +153,15 @@ export default function ProfilePage({ user }) {
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <h2 style={{ fontSize: '1.3rem', fontWeight: '800', margin: 0, color: '#0F172A' }}>{displayUser.displayName}</h2>
-              {isMfu && (
+              {isAdminUser(displayUser.email) ? (
+                <span className="profile-verified-badge" style={{ backgroundColor: '#FEF3C7', color: '#92400E', fontSize: '0.75rem', fontWeight: '800', padding: '0.2rem 0.55rem', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '0.25rem', border: '1px solid #FCD34D' }}>
+                  <ShieldCheck size={14} /> MFU Campus Administrator
+                </span>
+              ) : isMfu ? (
                 <span className="profile-verified-badge" style={{ backgroundColor: '#DEF7EC', color: '#03543F', fontSize: '0.75rem', fontWeight: '700', padding: '0.2rem 0.5rem', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   <ShieldCheck size={14} /> MFU Verified
                 </span>
-              )}
+              ) : null}
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748B', fontSize: '0.9rem', marginTop: '0.35rem' }}>
@@ -178,7 +183,40 @@ export default function ProfilePage({ user }) {
         </div>
       </div>
 
-      {/* Posting Privacy Preferences */}
+      {isAdminUser(displayUser.email) ? (
+        <div className="profile-card" style={{ background: '#FFFFFF', padding: '1.75rem', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
+            <ShieldCheck size={22} color="#8B0000" />
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', margin: 0, color: '#0F172A' }}>
+              Administrative Privileges
+            </h3>
+          </div>
+          <p style={{ color: '#475569', fontSize: '0.875rem', lineHeight: 1.6, margin: '0 0 1.25rem' }}>
+            This account is signed in with official Mae Fah Luang University administrator privileges. You have access to content moderation, live feedback controls, official facility responses, and CSV data intelligence.
+          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate?.('admin')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.7rem 1.25rem',
+              borderRadius: '10px',
+              background: '#8B0000',
+              color: '#FFFFFF',
+              fontWeight: '700',
+              fontSize: '0.875rem',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <ShieldCheck size={16} /> Open Admin Portal
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Posting Privacy Preferences */}
       <div className="profile-card" style={{ background: '#FFFFFF', padding: '1.75rem', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', marginBottom: '1.5rem' }}>
         <h3 style={{ fontSize: '1.05rem', fontWeight: '800', margin: '0 0 1.25rem 0', color: '#0F172A' }}>
           Posting Privacy
@@ -339,6 +377,8 @@ export default function ProfilePage({ user }) {
           </div>
         )}
       </div>
+        </>
+      )}
 
       {/* Delete Review Confirmation Modal */}
       {reviewToDelete && (

@@ -1,6 +1,23 @@
 import { useState } from 'react';
-import { ArrowRight, GraduationCap, Loader2, Moon, ShieldCheck, Sun } from 'lucide-react';
-import { loginWithGoogle, logoutUser, isMfuEmail } from '../services/firebaseDb';
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  KeyRound,
+  Loader2,
+  Lock,
+  Mail,
+  Moon,
+  ShieldCheck,
+  Sun
+} from 'lucide-react';
+import {
+  loginWithGoogle,
+  loginWithAdminCredentials,
+  logoutUser,
+  isMfuEmail
+} from '../services/firebaseDb';
 import './styles/LoginPage.css';
 
 function CampusIllustration() {
@@ -54,8 +71,14 @@ function CampusIllustration() {
 }
 
 export default function LoginPage({ onLoginSuccess, theme, onThemeToggle }) {
+  const [loginMode, setLoginMode] = useState('student'); // 'student' | 'admin'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Admin form state
+  const [adminEmail, setAdminEmail] = useState('campusadmin@mfu.ac.th');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -77,6 +100,39 @@ export default function LoginPage({ onLoginSuccess, theme, onThemeToggle }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAdminLogin = async (e) => {
+    e?.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      if (!adminEmail.trim()) {
+        setError('Please enter your administrator email.');
+        setLoading(false);
+        return;
+      }
+      if (!adminPassword.trim()) {
+        setError('Please enter your administrator password.');
+        setLoading(false);
+        return;
+      }
+
+      const adminUser = await loginWithAdminCredentials(adminEmail, adminPassword);
+      if (onLoginSuccess) onLoginSuccess(adminUser);
+    } catch (adminError) {
+      console.error('Admin authentication failed:', adminError);
+      setError(adminError?.message || 'Invalid administrator email or password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFillDemoAdmin = () => {
+    setAdminEmail('campusadmin@mfu.ac.th');
+    setAdminPassword('campus67');
+    setError('');
   };
 
   return (
@@ -122,39 +178,158 @@ export default function LoginPage({ onLoginSuccess, theme, onThemeToggle }) {
         </section>
 
         <section className="login-signin-panel">
-          <div className="login-signin-copy">
-            <span className="login-signin-eyebrow">Sign in</span>
-            <h2>Sign in to Campus Insight</h2>
-            <p>Use your university Google account to sign in.</p>
-          </div>
-
-          <div className="login-university-note">
-            <div className="login-note-heading">
+          {/* Mode Switcher Tabs */}
+          <div className="login-mode-switcher" role="tablist" aria-label="Sign-in role selection">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={loginMode === 'student'}
+              className={`login-mode-btn ${loginMode === 'student' ? 'is-active' : ''}`}
+              onClick={() => {
+                setLoginMode('student');
+                setError('');
+              }}
+            >
+              <GraduationCap size={16} />
+              <span>Student Portal</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={loginMode === 'admin'}
+              className={`login-mode-btn ${loginMode === 'admin' ? 'is-active' : ''}`}
+              onClick={() => {
+                setLoginMode('admin');
+                setError('');
+              }}
+            >
               <ShieldCheck size={16} />
-              <strong>For Mae Fah Luang University students</strong>
-            </div>
-            <div className="login-email-domains">
-              <strong>@lamduan.mfu.ac.th</strong>
-              <span>or</span>
-              <strong>@mfu.ac.th</strong>
-            </div>
+              <span>Campus Admin</span>
+            </button>
           </div>
 
-          {error && <p className="login-error" role="alert">{error}</p>}
+          {loginMode === 'student' ? (
+            <>
+              <div className="login-signin-copy">
+                <span className="login-signin-eyebrow">Student Access</span>
+                <h2>Sign in to Campus Insight</h2>
+                <p>Use your university Google account to review facilities and evaluate lecturers.</p>
+              </div>
 
-          <button className="login-google-button" onClick={handleGoogleLogin} disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="login-spinner" size={18} />
-                Signing in...
-              </>
-            ) : (
-              <>
-                Sign in with Google
-                <ArrowRight size={17} />
-              </>
-            )}
-          </button>
+              <div className="login-university-note">
+                <div className="login-note-heading">
+                  <ShieldCheck size={16} />
+                  <strong>For Mae Fah Luang University students</strong>
+                </div>
+                <div className="login-email-domains">
+                  <strong>@lamduan.mfu.ac.th</strong>
+                  <span>or</span>
+                  <strong>@mfu.ac.th</strong>
+                </div>
+              </div>
+
+              {error && <p className="login-error" role="alert">{error}</p>}
+
+              <button className="login-google-button" onClick={handleGoogleLogin} disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="login-spinner" size={18} />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign in with Google
+                    <ArrowRight size={17} />
+                  </>
+                )}
+              </button>
+            </>
+          ) : (
+            <form className="login-admin-form" onSubmit={handleAdminLogin}>
+              <div className="login-signin-copy">
+                <span className="login-signin-eyebrow">Facility &amp; Moderation</span>
+                <h2>Administrator Sign-in</h2>
+                <p>Sign in with your campus administrative credentials to manage feedback and facility actions.</p>
+              </div>
+
+              {error && <p className="login-error" role="alert">{error}</p>}
+
+              <div className="login-input-group">
+                <label htmlFor="admin-email">Administrator Email</label>
+                <div className="login-input-wrap">
+                  <Mail size={16} className="login-input-icon" />
+                  <input
+                    id="admin-email"
+                    type="email"
+                    required
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    placeholder="campusadmin@mfu.ac.th"
+                    autoComplete="username"
+                    className="login-input"
+                  />
+                </div>
+              </div>
+
+              <div className="login-input-group">
+                <label htmlFor="admin-password">Password</label>
+                <div className="login-input-wrap">
+                  <Lock size={16} className="login-input-icon" />
+                  <input
+                    id="admin-password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="Enter admin password"
+                    autoComplete="current-password"
+                    className="login-input"
+                  />
+                  <button
+                    type="button"
+                    className="login-toggle-pw"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="login-admin-hint-card">
+                <KeyRound size={15} />
+                <div className="login-admin-hint-text">
+                  <strong>Standard Admin Account:</strong>
+                  <code>campusadmin@mfu.ac.th</code> • <code>campus67</code>
+                </div>
+                <button
+                  type="button"
+                  className="login-quick-fill-btn"
+                  onClick={handleFillDemoAdmin}
+                >
+                  Quick Fill
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                className="login-admin-submit-btn"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="login-spinner" size={18} />
+                    Authenticating...
+                  </>
+                ) : (
+                  <>
+                    <span>Sign in as Administrator</span>
+                    <ArrowRight size={17} />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
         </section>
       </main>
       <div className="login-bottom-space" aria-hidden="true" />

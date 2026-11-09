@@ -45,10 +45,38 @@ export const storage = getStorage(app);
 storage.maxUploadRetryTime = 8000; // Limit retry loop to 8 seconds instead of default 10 minutes
 export const googleProvider = new GoogleAuthProvider();
 
+// Authentication State & Admin Session Management
+const authSubscribers = new Set();
+
+const notifyAuthSubscribers = (user) => {
+  authSubscribers.forEach((cb) => {
+    try {
+      cb(user);
+    } catch (err) {
+      console.error('Auth subscriber callback error:', err);
+    }
+  });
+};
+
+export const getSavedAdminSession = () => {
+  try {
+    const raw = localStorage.getItem('campus_admin_session');
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.warn('Unable to read saved administrator session:', error);
+    return null;
+  }
+};
+
 // Google Auth Helpers
 export const loginWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    try {
+      localStorage.removeItem('campus_admin_session');
+    } catch {
+      // ignore
+    }
     return result.user;
   } catch (error) {
     console.error("Google Auth Error:", error);
@@ -56,7 +84,45 @@ export const loginWithGoogle = async () => {
   }
 };
 
-export const logoutUser = () => signOut(auth);
+// Admin Credentials Login (campusadmin@mfu.ac.th / campus67)
+export const loginWithAdminCredentials = async (email, password) => {
+  const normalized = (email || '').trim().toLowerCase();
+  const inputPassword = (password || '').trim();
+
+  if (normalized === 'campusadmin@mfu.ac.th' && inputPassword === 'campus67') {
+    const adminUser = {
+      uid: 'admin_campusadmin_mfu',
+      email: 'campusadmin@mfu.ac.th',
+      displayName: 'Campus Administrator',
+      photoURL: null,
+      role: 'admin',
+      isAdmin: true
+    };
+
+    try {
+      localStorage.setItem('campus_admin_session', JSON.stringify(adminUser));
+    } catch (err) {
+      console.warn('Unable to persist admin session in localStorage:', err);
+    }
+
+    notifyAuthSubscribers(adminUser);
+    return adminUser;
+  }
+
+  const err = new Error('Invalid email or password. Please verify administrator credentials.');
+  err.code = 'auth/invalid-credential';
+  throw err;
+};
+
+export const logoutUser = async () => {
+  try {
+    localStorage.removeItem('campus_admin_session');
+  } catch (err) {
+    console.warn('Failed to clear admin session:', err);
+  }
+  notifyAuthSubscribers(null);
+  return signOut(auth);
+};
 
 export const isMfuEmail = (email) => {
   if (!email || typeof email !== 'string') return false;
@@ -79,6 +145,7 @@ export const isAdminUser = (email) => {
 
   // 2. Built-in defaults for administration and active student developer account
   const defaultAdmins = [
+    'campusadmin@mfu.ac.th',
     '6731503139@lamduan.mfu.ac.th',
     'admin@mfu.ac.th',
     'moderator@mfu.ac.th',
@@ -93,9 +160,25 @@ export const isAdminUser = (email) => {
 };
 
 export const subscribeToAuth = (callback) => {
-  return onAuthStateChanged(auth, (user) => {
-    callback(user);
+  authSubscribers.add(callback);
+
+  // If an admin session is currently active, immediately report it
+  const savedAdmin = getSavedAdminSession();
+  if (savedAdmin) {
+    callback(savedAdmin);
+  }
+
+  const unsubscribeFirebase = onAuthStateChanged(auth, (user) => {
+    // Only pass Firebase user if there is no manual admin session overriding
+    if (!getSavedAdminSession()) {
+      callback(user);
+    }
   });
+
+  return () => {
+    authSubscribers.delete(callback);
+    unsubscribeFirebase();
+  };
 };
 
 // Save feedback document to Firestore
