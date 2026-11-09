@@ -1,255 +1,224 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Building2, 
-  Utensils, 
-  Bus, 
-  HeartPulse, 
-  Star, 
-  TrendingUp, 
-  MessageSquare, 
+import { useEffect, useState } from 'react';
+import {
+  ArrowRight,
   Award,
-  ArrowRight
+  Building2,
+  Bus,
+  HeartPulse,
+  Loader2,
+  MessageSquare,
+  Plus,
+  Sparkles,
+  Utensils
 } from 'lucide-react';
-import { fetchFeedbacksFromFirestore } from '../services/firebaseDb';
+import { analyzeFeedback } from '../services/insightsAnalyzer';
+import { subscribeToFeedbacks } from '../services/firebaseDb';
+import './HomePage.css';
 
-export default function HomePage({ onNavigate }) {
+const CATEGORIES = [
+  { id: 'Dormitories', label: 'Dormitories', icon: Building2, color: '#762316' },
+  { id: 'Canteen', label: 'Canteens', icon: Utensils, color: '#b59a43' },
+  { id: 'Services', label: 'Services & Wifi', icon: Bus, color: '#5e73b7' },
+  { id: 'Health Services', label: 'Health Services', icon: HeartPulse, color: '#86a965' }
+];
+
+const displayScore = (score) => score === null ? '—' : score.toFixed(1);
+
+const getInitials = (name = '') => name
+  .trim()
+  .split(/\s+/)
+  .slice(0, 2)
+  .map((part) => part[0])
+  .join('')
+  .toUpperCase() || 'S';
+
+export default function HomePage({ onNavigate, user }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    loadOverviewData();
+    const unsubscribe = subscribeToFeedbacks(
+      (updatedReviews) => {
+        setReviews(updatedReviews);
+        setError('');
+        setLoading(false);
+      },
+      (loadError) => {
+        console.error('Unable to load dashboard feedback:', loadError);
+        setError('Campus ratings could not be loaded. Please try again later.');
+        setLoading(false);
+      }
+    );
+
+    return unsubscribe;
   }, []);
 
-  const loadOverviewData = async () => {
-    setLoading(true);
-    const data = await fetchFeedbacksFromFirestore();
-    setReviews(data);
-    setLoading(false);
-  };
+  const insights = analyzeFeedback(reviews);
+  const categoryScores = new Map(
+    insights.categoryAverages.map((item) => [item.name, item.average])
+  );
+  const categoriesWithScores = CATEGORIES.map((category) => ({
+    ...category,
+    score: categoryScores.get(category.id) ?? null
+  }));
+  const ratedCategories = categoriesWithScores.filter((category) => category.score !== null);
+  const highestCategory = ratedCategories.reduce(
+    (best, category) => !best || category.score > best.score ? category : best,
+    null
+  );
+  const lowestCategory = ratedCategories.reduce(
+    (worst, category) => !worst || category.score < worst.score ? category : worst,
+    null
+  );
+  const topLocations = [...insights.locationAverages]
+    .sort((a, b) => b.average - a.average)
+    .slice(0, 3);
+  const studentName = user?.displayName || user?.email || 'Campus student';
+  const isMfuEmail = user?.email?.endsWith('@lamduan.mfu.ac.th') || user?.email?.endsWith('@mfu.ac.th');
 
-  // 1. Calculate Category Average Ratings
-  const getCategoryStats = (categoryName) => {
-    const categoryReviews = reviews.filter((r) => r.category === categoryName);
-    if (categoryReviews.length === 0) return { avg: 4.2, count: 0 }; // Fallback defaults
-
-    let totalSum = 0;
-    let metricCount = 0;
-
-    categoryReviews.forEach((r) => {
-      if (r.ratings) {
-        Object.values(r.ratings).forEach((val) => {
-          totalSum += Number(val);
-          metricCount += 1;
-        });
-      }
-    });
-
-    const avg = metricCount > 0 ? (totalSum / metricCount).toFixed(1) : 4.2;
-    return { avg, count: categoryReviews.length };
-  };
-
-  const dormStats = getCategoryStats('Dormitories');
-  const canteenStats = getCategoryStats('Canteen');
-  const serviceStats = getCategoryStats('Services');
-  const healthStats = getCategoryStats('Health Services');
-
-  // Overall MFU Average Score Calculation
-  const categoryScores = [
-    parseFloat(dormStats.avg), 
-    parseFloat(canteenStats.avg), 
-    parseFloat(serviceStats.avg), 
-    parseFloat(healthStats.avg)
-  ];
-  const overallMfuScore = (categoryScores.reduce((a, b) => a + b, 0) / categoryScores.length).toFixed(1);
-
-  const categories = [
-    { id: 'Dormitories', label: 'Dormitories', score: dormStats.avg, count: dormStats.count, icon: Building2, color: '#8B0000' },
-    { id: 'Canteen', label: 'Canteens', score: canteenStats.avg, count: canteenStats.count, icon: Utensils, color: '#B45309' },
-    { id: 'Services', label: 'Services & Wifi', score: serviceStats.avg, count: serviceStats.count, icon: Bus, color: '#2563EB' },
-    { id: 'Health Services', label: 'Health Services', score: healthStats.avg, count: healthStats.count, icon: HeartPulse, color: '#059669' }
-  ];
+  if (loading) {
+    return (
+      <div className="dashboard-loading" role="status">
+        <Loader2 className="dashboard-spinner" size={20} />
+        Loading campus ratings...
+      </div>
+    );
+  }
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      
-      {/* Header Banner */}
-      <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+    <div className="dashboard-home">
+      <header className="dashboard-header">
         <div>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: '800', margin: '0 0 0.5rem 0', color: '#0F172A', letterSpacing: '-0.02em' }}>
-            Campus Insights Dashboard
-          </h1>
-          <p style={{ color: '#475569', fontSize: '1rem', margin: 0, fontWeight: '500' }}>
-            Real-time evaluation data & satisfaction metrics across Mae Fah Luang University.
-          </p>
+          <h1>Campus Insights Dashboard</h1>
+          <p>Real-time evaluation data &amp; satisfaction metrics across Mae Fah Luang University.</p>
         </div>
-
-        <button
-          onClick={() => onNavigate('submit')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            backgroundColor: '#8B0000',
-            color: '#FFFFFF',
-            border: 'none',
-            padding: '0.8rem 1.25rem',
-            borderRadius: '10px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(139, 0, 0, 0.25)',
-            fontSize: '0.9rem'
-          }}
-        >
-          <Star size={16} />
+        <button className="dashboard-submit-button" onClick={() => onNavigate('submit')}>
+          <Plus size={16} />
           Submit Feedback
         </button>
-      </div>
+      </header>
 
-      {/* Top Metric Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem', marginBottom: '2rem' }}>
-        
-        {/* Overall Score */}
-        <div style={{ background: 'linear-gradient(135deg, #8B0000 0%, #A71930 100%)', color: '#FFFFFF', padding: '1.5rem', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(139, 0, 0, 0.3)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.9 }}>
-              Overall MFU Rating
+      <section className="dashboard-student-card" aria-label="Signed-in student">
+        {user?.photoURL ? (
+          <img className="dashboard-avatar" src={user.photoURL} alt="" />
+        ) : (
+          <div className="dashboard-avatar dashboard-avatar-initials">{getInitials(studentName)}</div>
+        )}
+        <div className="dashboard-student-details">
+          <strong>{studentName}</strong>
+          <span>
+            {user?.email || 'Signed in'}
+            <span className="dashboard-detail-separator">•</span>
+            <span className={isMfuEmail ? 'dashboard-status-verified' : 'dashboard-status'}>
+              <span className="dashboard-status-dot" />
+              {isMfuEmail ? 'MFU account' : 'Student account'}
             </span>
-            <Award size={22} color="#FDE047" />
-          </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: '900', lineHeight: 1 }}>{overallMfuScore}</div>
-          <span style={{ fontSize: '0.8rem', opacity: 0.85, marginTop: '0.5rem', display: 'block' }}>out of 5.0 Overall Index</span>
-        </div>
-
-        {/* Total Feedback Reports */}
-        <div style={{ background: '#FFFFFF', padding: '1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Total Feedback
-            </span>
-            <MessageSquare size={20} color="#64748B" />
-          </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: '800', color: '#0F172A', lineHeight: 1 }}>{reviews.length}</div>
-          <span style={{ fontSize: '0.8rem', color: '#059669', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: '600' }}>
-            <TrendingUp size={14} /> Firestore Synced
           </span>
         </div>
+      </section>
 
-        {/* Top Category */}
-        <div style={{ background: '#FFFFFF', padding: '1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Top Category
-            </span>
-            <Utensils size={20} color="#B45309" />
-          </div>
-          <div style={{ fontSize: '1.4rem', fontWeight: '800', color: '#0F172A', lineHeight: 1.2 }}>Canteen</div>
-          <span style={{ fontSize: '0.8rem', color: '#B45309', fontWeight: '700', marginTop: '0.5rem', display: 'block' }}>⭐ {canteenStats.avg} / 5 Score</span>
-        </div>
+      {error && <div className="dashboard-error" role="alert">{error}</div>}
 
-        {/* Attention Area */}
-        <div style={{ background: '#FFFFFF', padding: '1.5rem', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Needs Focus
-            </span>
-            <Bus size={20} color="#2563EB" />
-          </div>
-          <div style={{ fontSize: '1.4rem', fontWeight: '800', color: '#0F172A', lineHeight: 1.2 }}>Services & Wifi</div>
-          <span style={{ fontSize: '0.8rem', color: '#2563EB', fontWeight: '700', marginTop: '0.5rem', display: 'block' }}>⭐ {serviceStats.avg} / 5 Score</span>
-        </div>
+      <section className="dashboard-metrics" aria-label="Campus rating summary">
+        <article className="dashboard-metric-card dashboard-overall-card">
+          <div className="dashboard-metric-label">Overall rating <Award size={15} /></div>
+          <strong className="dashboard-overall-score">{displayScore(insights.overallAverage)}</strong>
+          <span>out of 5.0 overall average</span>
+        </article>
 
-      </div>
+        <article className="dashboard-metric-card">
+          <div className="dashboard-metric-label">Total feedback <MessageSquare size={15} /></div>
+          <strong className="dashboard-metric-value">{insights.totalSubmissions}</strong>
+          <span className="dashboard-live-label"><span className="dashboard-status-dot" /> Live from campus feedback</span>
+        </article>
 
-      {/* Chart Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
-        
-        {/* Horizontal Bar Chart (Category Comparison) */}
-        <div style={{ background: '#FFFFFF', padding: '1.75rem', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: '700', margin: '0 0 1.25rem 0', color: '#0F172A' }}>
-            Category Satisfaction Breakdown
-          </h3>
+        <article className="dashboard-metric-card">
+          <div className="dashboard-metric-label">Top category <Utensils size={15} /></div>
+          <strong className="dashboard-metric-title">{highestCategory?.label ?? 'Not rated yet'}</strong>
+          <span className="dashboard-highlight-score">
+            {highestCategory ? `${displayScore(highestCategory.score)} / 5 average` : 'No ratings submitted'}
+          </span>
+        </article>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {categories.map((cat) => {
-              const Icon = cat.icon;
-              const percentage = (parseFloat(cat.score) / 5) * 100;
-              return (
-                <div key={cat.id}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', fontSize: '0.875rem', fontWeight: '600' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1E293B' }}>
-                      <Icon size={16} color={cat.color} />
-                      {cat.label}
-                    </span>
-                    <span style={{ color: '#0F172A', fontWeight: '700' }}>{cat.score} / 5</span>
+        <article className="dashboard-metric-card">
+          <div className="dashboard-metric-label">Needs focus <Bus size={15} /></div>
+          <strong className="dashboard-metric-title">{lowestCategory?.label ?? 'Not rated yet'}</strong>
+          <span className="dashboard-focus-score">
+            {lowestCategory ? `${displayScore(lowestCategory.score)} / 5 average` : 'No ratings submitted'}
+          </span>
+        </article>
+      </section>
+
+      <section className="dashboard-panels">
+        <article className="dashboard-panel dashboard-category-panel">
+          <h2>Category Satisfaction Breakdown</h2>
+          {ratedCategories.length === 0 ? (
+            <p className="dashboard-empty-state">Category averages will appear after students submit ratings.</p>
+          ) : (
+            <div className="dashboard-category-list">
+              {categoriesWithScores.map((category, index) => {
+                const Icon = category.icon;
+                return (
+                  <div className="dashboard-category-row" key={category.id}>
+                    <div className="dashboard-category-heading">
+                      <span className="dashboard-category-name">
+                        <Icon size={15} color={category.color} />
+                        {category.label}
+                      </span>
+                      <strong>{displayScore(category.score)} / 5</strong>
+                    </div>
+                    <div
+                      className="dashboard-progress-track"
+                      role="progressbar"
+                      aria-label={`${category.label} average rating`}
+                      aria-valuemin={0}
+                      aria-valuemax={5}
+                      aria-valuenow={category.score ?? 0}
+                    >
+                      <span
+                        className="dashboard-progress-fill"
+                        style={{
+                          width: `${category.score === null ? 0 : (category.score / 5) * 100}%`,
+                          backgroundColor: category.color,
+                          animationDelay: `${index * 90}ms`
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div style={{ width: '100%', height: '10px', backgroundColor: '#F1F5F9', borderRadius: '6px', overflow: 'hidden' }}>
-                    <div 
-                      style={{ 
-                        width: `${percentage}%`, 
-                        height: '100%', 
-                        backgroundColor: cat.color, 
-                        borderRadius: '6px',
-                        transition: 'width 0.5s ease-in-out'
-                      }} 
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Metric Target Summary */}
-        <div style={{ background: '#FFFFFF', padding: '1.75rem', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: '700', margin: '0 0 0.5rem 0', color: '#0F172A' }}>
-              Campus Health Insights
-            </h3>
-            <p style={{ color: '#64748B', fontSize: '0.875rem', margin: '0 0 1.25rem 0' }}>
-              Aggregated statistics derived from user submissions across campus locations.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-              <div style={{ padding: '0.85rem', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.875rem', color: '#334155', fontWeight: '600' }}>Dormitory Water & Electricity</span>
-                <span style={{ color: '#8B0000', fontWeight: '700', fontSize: '0.9rem' }}>4.1 / 5</span>
-              </div>
-              <div style={{ padding: '0.85rem', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.875rem', color: '#334155', fontWeight: '600' }}>Food Halal & Religious Variety</span>
-                <span style={{ color: '#B45309', fontWeight: '700', fontSize: '0.9rem' }}>4.7 / 5</span>
-              </div>
-              <div style={{ padding: '0.85rem', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.875rem', color: '#334155', fontWeight: '600' }}>Shuttle Bus Peak Timeliness</span>
-                <span style={{ color: '#2563EB', fontWeight: '700', fontSize: '0.9rem' }}>3.6 / 5</span>
-              </div>
+                );
+              })}
             </div>
+          )}
+        </article>
+
+        <article className="dashboard-panel dashboard-insights-panel">
+          <div className="dashboard-panel-heading">
+            <div>
+              <h2>Campus Health Insights</h2>
+              <p>Highest-rated locations based on submitted student feedback.</p>
+            </div>
+            <Sparkles size={18} color="#762316" />
           </div>
 
-          <button
-            onClick={() => onNavigate('feed')}
-            style={{
-              marginTop: '1.25rem',
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: '#F8FAFC',
-              color: '#8B0000',
-              border: '1px solid #CBD5E1',
-              borderRadius: '8px',
-              fontWeight: '700',
-              fontSize: '0.875rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.4rem'
-            }}
-          >
+          {topLocations.length === 0 ? (
+            <p className="dashboard-empty-state">Location ratings will appear after students submit feedback.</p>
+          ) : (
+            <div className="dashboard-location-list">
+              {topLocations.map((location) => (
+                <div className="dashboard-location-row" key={location.name}>
+                  <span>{location.name}</span>
+                  <strong>{displayScore(location.average)} / 5</strong>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button className="dashboard-feed-button" onClick={() => onNavigate('feed')}>
             View Recent Reviews Feed <ArrowRight size={16} />
           </button>
-        </div>
-
-      </div>
-
+        </article>
+      </section>
     </div>
   );
 }

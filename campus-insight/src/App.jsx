@@ -1,17 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { Home, MessageSquare, Star, Sparkles, User, LogOut, GraduationCap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Home, MessageSquare, Plus, Sparkles, User, GraduationCap, Moon, Sun } from 'lucide-react';
 import HomePage from './pages/HomePage';
 import FeedPage from './pages/FeedPage';
 import SubmitFeedbackPage from './pages/SubmitFeedbackPage';
 import InsightsPage from './pages/InsightsPage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
-import { subscribeToAuth, logoutUser } from './services/firebaseDb';
+import { subscribeToAuth } from './services/firebaseDb';
+import './App.css';
+
+const getSavedTheme = () => {
+  try {
+    return localStorage.getItem('campus-insight-theme') === 'dark' ? 'dark' : 'light';
+  } catch (error) {
+    console.warn('Unable to read saved appearance preference:', error);
+    return 'light';
+  }
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
+  const [theme, setTheme] = useState(getSavedTheme);
   const [user, setUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem('campus-insight-theme', theme);
+    } catch (error) {
+      console.warn('Unable to save appearance preference:', error);
+    }
+  }, [theme]);
 
   useEffect(() => {
     const unsubscribe = subscribeToAuth((currentUser) => {
@@ -33,8 +53,12 @@ export default function App() {
   // 1. STANDALONE LOGIN SCREEN (If user is not logged in)
   if (!user) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F8FAFC', width: '100vw', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
-        <LoginPage onLoginSuccess={() => setActiveTab('home')} />
+      <div className="login-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F8FAFC', width: '100vw', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+        <LoginPage
+          onLoginSuccess={() => setActiveTab('home')}
+          theme={theme}
+          onThemeToggle={() => setTheme((currentTheme) => currentTheme === 'dark' ? 'light' : 'dark')}
+        />
       </div>
     );
   }
@@ -43,16 +67,16 @@ export default function App() {
   const navItems = [
     { id: 'home', label: 'Overview', icon: Home },
     { id: 'feed', label: 'Category Feed', icon: MessageSquare },
-    { id: 'submit', label: 'Submit Feedback', icon: Star },
+    { id: 'submit', label: 'Submit Feedback', icon: Plus },
     { id: 'insights', label: 'AI Insights', icon: Sparkles },
     { id: 'profile', label: 'Profile & Settings', icon: User }
   ];
 
   return (
-    <div style={{ display: 'flex', width: '100vw', minHeight: '100vh', backgroundColor: '#F8FAFC', color: '#0F172A', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+    <div className="dashboard-shell">
       
       {/* Sidebar Navigation */}
-      <aside style={{ width: '270px', minWidth: '270px', backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', padding: '2rem 1.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <aside className="dashboard-sidebar">
         
         <div>
           {/* Header */}
@@ -75,6 +99,7 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
+                  className={`dashboard-nav-button${isActive ? ' is-active' : ''}`}
                   style={{
                     width: '100%',
                     display: 'flex',
@@ -83,17 +108,17 @@ export default function App() {
                     padding: '0.85rem 1rem',
                     borderRadius: '10px',
                     border: 'none',
-                    backgroundColor: isActive ? '#8B0000' : 'transparent',
+                    backgroundColor: isActive ? '#762316' : 'transparent',
                     color: isActive ? '#FFFFFF' : '#475569',
                     fontWeight: isActive ? '700' : '600',
                     fontSize: '0.925rem',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.15s ease-in-out',
-                    boxShadow: isActive ? '0 4px 14px rgba(139, 0, 0, 0.25)' : 'none'
+                    boxShadow: isActive ? '0 4px 14px rgba(118, 35, 22, 0.25)' : 'none'
                   }}
                 >
-                  <Icon size={18} strokeWidth={isActive ? 2.3 : 1.8} color={isActive ? '#FFFFFF' : '#64748B'} />
+                  <Icon size={18} strokeWidth={isActive ? 2.3 : 1.8} />
                   {item.label}
                 </button>
               );
@@ -101,8 +126,8 @@ export default function App() {
           </nav>
         </div>
 
-        {/* User Account & Sign Out Footer */}
-        <div style={{ paddingTop: '1rem', borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* User account and appearance controls */}
+        <div className="sidebar-footer" style={{ paddingTop: '1rem', borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center' }}>
           <button
             onClick={() => setActiveTab('profile')}
             style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem', borderRadius: '10px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
@@ -119,22 +144,23 @@ export default function App() {
               <div style={{ fontSize: '0.725rem', color: '#64748B' }}>View Profile</div>
             </div>
           </button>
-
           <button
-            onClick={logoutUser}
-            title="Sign Out"
-            style={{ padding: '0.5rem', background: '#FEE2E2', color: '#991B1B', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'grid', placeItems: 'center' }}
+            type="button"
+            className="theme-toggle-button"
+            onClick={() => setTheme((currentTheme) => currentTheme === 'dark' ? 'light' : 'dark')}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            <LogOut size={16} />
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
         </div>
 
       </aside>
 
       {/* Main Content Viewport */}
-      <main style={{ flex: 1, padding: '2.5rem 3.5rem', overflowY: 'auto' }}>
-        {activeTab === 'home' && <HomePage onNavigate={setActiveTab} />}
-        {activeTab === 'feed' && <FeedPage />}
+      <main className="dashboard-main">
+        {activeTab === 'home' && <HomePage onNavigate={setActiveTab} user={user} />}
+        {activeTab === 'feed' && <FeedPage onNavigate={setActiveTab} />}
         {activeTab === 'submit' && <SubmitFeedbackPage user={user} onSubmitted={() => setActiveTab('feed')} />}
         {activeTab === 'insights' && <InsightsPage />}
         {activeTab === 'profile' && <ProfilePage user={user} />}

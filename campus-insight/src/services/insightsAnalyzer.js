@@ -49,14 +49,21 @@ const groupRatings = (reviews, field) => {
       return;
     }
 
-    const current = groups.get(name) || [];
-    groups.set(name, current.concat(toRatingValues(review)));
+    const values = toRatingValues(review);
+    if (values.length === 0) {
+      return;
+    }
+
+    const current = groups.get(name) || { ratings: [], submissionCount: 0 };
+    current.ratings.push(...values);
+    current.submissionCount += 1;
+    groups.set(name, current);
   });
 
-  return Array.from(groups, ([name, ratings]) => ({
+  return Array.from(groups, ([name, group]) => ({
     name,
-    average: formatAverage(ratings),
-    submissionCount: reviews.filter((review) => review?.[field] === name).length
+    average: formatAverage(group.ratings),
+    submissionCount: group.submissionCount
   })).filter((group) => group.average !== null);
 };
 

@@ -64,30 +64,36 @@ export const saveFeedbackToFirestore = async (feedbackData) => {
   }
 };
 
+const normalizeFeedbackDocument = (documentSnapshot) => {
+  const data = documentSnapshot.data();
+  const rawTimestamp = data.createdAt;
+  const createdAtMillis = rawTimestamp && typeof rawTimestamp.toDate === 'function'
+    ? rawTimestamp.toDate().getTime()
+    : typeof rawTimestamp === 'string' || typeof rawTimestamp === 'number'
+      ? new Date(rawTimestamp).getTime()
+      : null;
+  const validTimestamp = Number.isFinite(createdAtMillis) ? createdAtMillis : null;
+
+  return {
+    id: documentSnapshot.id,
+    ...data,
+    createdAt: validTimestamp === null
+      ? 'Date unavailable'
+      : new Date(validTimestamp).toISOString().split('T')[0],
+    createdAtMillis: validTimestamp
+  };
+};
+
 // Real-time listener for instant Feed updates
-export const subscribeToFeedbacks = (callback) => {
+export const subscribeToFeedbacks = (callback, onError = () => {}) => {
   const q = query(collection(db, 'campus_reviews'), orderBy('createdAt', 'desc'));
   
   return onSnapshot(q, (querySnapshot) => {
-    const reviews = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      
-      let dateString = new Date().toISOString().split('T')[0];
-      if (data.createdAt && typeof data.createdAt.toDate === 'function') {
-        dateString = data.createdAt.toDate().toISOString().split('T')[0];
-      }
-
-      reviews.push({
-        id: doc.id,
-        ...data,
-        createdAt: dateString
-      });
-    });
-    
+    const reviews = querySnapshot.docs.map(normalizeFeedbackDocument);
     callback(reviews);
   }, (error) => {
     console.error('Error listening to Firestore updates:', error);
+    onError(error);
   });
 };
 
@@ -96,18 +102,7 @@ export const fetchFeedbacksFromFirestore = async ({ throwOnError = false } = {})
   try {
     const q = query(collection(db, 'campus_reviews'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    const reviews = [];
-    
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      let dateString = new Date().toISOString().split('T')[0];
-      if (data.createdAt && typeof data.createdAt.toDate === 'function') {
-        dateString = data.createdAt.toDate().toISOString().split('T')[0];
-      }
-      reviews.push({ id: doc.id, ...data, createdAt: dateString });
-    });
-    
-    return reviews;
+    return querySnapshot.docs.map(normalizeFeedbackDocument);
   } catch (error) {
     console.error('Error reading from Firestore:', error);
     if (throwOnError) {
