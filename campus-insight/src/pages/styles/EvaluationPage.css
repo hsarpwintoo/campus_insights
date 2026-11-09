@@ -150,6 +150,27 @@
   cursor: pointer;
 }
 
+.evaluation-data-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.8rem 0 0;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.evaluation-data-status.is-fallback {
+  color: #9a6700;
+}
+
+.evaluation-status-spinner {
+  animation: evaluation-spin 900ms linear infinite;
+}
+
+@keyframes evaluation-spin {
+  to { transform: rotate(360deg); }
+}
+
 .evaluation-selection-card,
 .lecturer-detail-card,
 .evaluation-form {
@@ -201,6 +222,36 @@
 .lecturer-reviews-section {
   margin-top: 1rem;
   padding: 0 0.2rem;
+}
+
+.lecturer-availability-section {
+  margin-top: 1rem;
+  padding: 0 0.2rem;
+}
+
+.lecturer-availability-section .evaluation-section-heading {
+  margin-top: 0;
+}
+
+.lecturer-availability-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.lecturer-availability-slot {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e4e1da;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.85rem;
+}
+
+.lecturer-availability-slot span {
+  color: #18794e;
+  font-weight: 700;
 }
 
 .lecturer-reviews-section .evaluation-section-heading {

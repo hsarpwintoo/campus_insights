@@ -339,6 +339,12 @@ html[data-theme='dark'] .evaluation-empty-reviews {
   border-color: #353535;
 }
 
+html[data-theme='dark'] .lecturer-availability-slot {
+  border-color: #353535;
+  background: #1e1e1e;
+  color: #f3f4f6;
+}
+
 html[data-theme='dark'] .evaluation-back-button {
   color: #f0a397;
 }

@@ -4,6 +4,36 @@ const RENDER_BACKEND_URL = "https://campus-insight-b9mp.onrender.com";
 const PARTNER_CLOUDFLARE_URL = "https://advising-platform.aron078.workers.dev";
 const CAMPUS_INSIGHT_KEY = "ADVISING_PLATFORM_SECRET_KEY";
 
+export const fetchPartnerLecturer = async (uid) => {
+  const response = await axios.get(`${PARTNER_CLOUDFLARE_URL}/api/partner/lecturers/${encodeURIComponent(uid)}`, {
+    headers: { 'x-api-key': CAMPUS_INSIGHT_KEY },
+    timeout: 5000
+  });
+  return response.data?.data || response.data;
+};
+
+export const fetchPartnerSchoolLecturers = async (schoolId) => {
+  const response = await axios.get(`${PARTNER_CLOUDFLARE_URL}/api/partner/lecturers`, {
+    params: { schoolId },
+    headers: { 'x-api-key': CAMPUS_INSIGHT_KEY },
+    timeout: 5000
+  });
+  const lecturers = response.data?.data || response.data?.lecturers || response.data;
+  return Array.isArray(lecturers) ? lecturers : [];
+};
+
+export const fetchPartnerLecturerAvailability = async (
+  date = new Date().toISOString().split('T')[0],
+  durationMinutes = 45
+) => {
+  const response = await axios.get(`${PARTNER_CLOUDFLARE_URL}/api/partner/availability`, {
+    params: { date, durationMinutes },
+    headers: { 'x-api-key': CAMPUS_INSIGHT_KEY },
+    timeout: 5000
+  });
+  return response.data?.data || response.data;
+};
+
 /**
  * Fetch lecturer availability from Partner API with automatic failure handling
  */
