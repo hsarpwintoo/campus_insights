@@ -13,7 +13,7 @@ import {
   Utensils,
   X
 } from 'lucide-react';
-import { saveFeedbackToFirestore, uploadFeedbackPhoto } from '../services/firebaseDb';
+import { compressImage, saveFeedbackToFirestore, uploadFeedbackPhoto } from '../services/firebaseDb';
 import './styles/SubmitFeedbackPage.css';
 
 const LOCATION_OPTIONS = {
@@ -105,7 +105,7 @@ export default function SubmitFeedbackPage({ user, onSubmitted }) {
     setRatings((previous) => ({ ...previous, [key]: value }));
   };
 
-  const handlePhotoChange = (event) => {
+  const handlePhotoChange = async (event) => {
     setPhotoError('');
     const file = event.target.files?.[0];
     if (!file) return;
@@ -122,12 +122,20 @@ export default function SubmitFeedbackPage({ user, onSubmitted }) {
       return;
     }
 
-    if (photoPreview) {
-      URL.revokeObjectURL(photoPreview);
-    }
+    try {
+      const optimized = await compressImage(file);
+      const optimizedFile = optimized.file || file;
 
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+
+      setPhotoFile(optimizedFile);
+      setPhotoPreview(URL.createObjectURL(optimizedFile));
+    } catch (compressionError) {
+      console.warn('Unable to optimize feedback photo:', compressionError);
+      setPhotoError('We could not optimize this image. Please try another photo.');
+    }
   };
 
   const handleRemovePhoto = () => {
@@ -159,7 +167,7 @@ export default function SubmitFeedbackPage({ user, onSubmitted }) {
 
       if (photoFile) {
         setUploadStatus('Optimizing & uploading photo...');
-        imageUrl = await uploadFeedbackPhoto(photoFile, user?.uid || user?.email);
+        imageUrl = await uploadFeedbackPhoto(photoFile, user?.uid || user?.email, { alreadyCompressed: true });
       }
 
       setUploadStatus('Saving feedback...');

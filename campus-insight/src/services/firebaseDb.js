@@ -499,13 +499,15 @@ export const compressImage = (file, maxWidth = 1200, quality = 0.75) => {
 };
 
 // Upload a feedback evidence photo to Firebase Storage with compression and resilient fallback
-export const uploadFeedbackPhoto = async (file, userId) => {
+export const uploadFeedbackPhoto = async (file, userId, { alreadyCompressed = false } = {}) => {
   if (!file) return null;
 
   // 1. Client-side compression: shrinks a 4MB smartphone photo to ~100KB in ~150ms
   let compressed;
   try {
-    compressed = await compressImage(file, 1200, 0.75);
+    compressed = alreadyCompressed
+      ? { file, dataUrl: null }
+      : await compressImage(file, 1200, 0.75);
   } catch {
     compressed = { file, dataUrl: null };
   }
