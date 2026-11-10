@@ -30,14 +30,14 @@ export const LECTURER_SCHOOLS = [
     ]
   },
   {
-    id: 'health-science',
+    id: 'health-sciece',
     name: 'School of Health Science',
     lecturers: [
-      { id: 'health-science-1', name: 'Dr. Supansa Khamkaen', title: 'Associate Professor', department: 'Public Health', email: 'supansa.khamkaen@mfu.ac.th', office: 'E4A-201', reviews: null },
-      { id: 'health-science-2', name: 'Ms. Waranya Sae-tang', title: 'Lecturer', department: 'Physical Therapy', email: 'waranya.saetang@mfu.ac.th', office: 'E4A-204', reviews: null },
-      { id: 'health-science-3', name: 'Dr. Chanon Preecha', title: 'Senior Lecturer', department: 'Traditional Medicine', email: 'chanon.preecha@mfu.ac.th', office: 'E4A-207', reviews: null },
-      { id: 'health-science-4', name: 'Dr. Napassorn Kittisak', title: 'Assistant Professor', department: 'Nursing', email: 'napassorn.kittisak@mfu.ac.th', office: 'E4A-209', reviews: null },
-      { id: 'health-science-5', name: 'Mr. Teerapat Sornchai', title: 'Lecturer', department: 'Sports and Health Science', email: 'teerapat.sornchai@mfu.ac.th', office: 'E4A-212', reviews: null }
+      { id: 'health-sciece-1', name: 'Dr. Supansa Khamkaen', title: 'Associate Professor', department: 'Public Health', email: 'supansa.khamkaen@mfu.ac.th', office: 'E4A-201', reviews: null },
+      { id: 'health-sciece-2', name: 'Ms. Waranya Sae-tang', title: 'Lecturer', department: 'Physical Therapy', email: 'waranya.saetang@mfu.ac.th', office: 'E4A-204', reviews: null },
+      { id: 'health-sciece-3', name: 'Dr. Chanon Preecha', title: 'Senior Lecturer', department: 'Traditional Medicine', email: 'chanon.preecha@mfu.ac.th', office: 'E4A-207', reviews: null },
+      { id: 'health-sciece-4', name: 'Dr. Napassorn Kittisak', title: 'Assistant Professor', department: 'Nursing', email: 'napassorn.kittisak@mfu.ac.th', office: 'E4A-209', reviews: null },
+      { id: 'health-sciece-5', name: 'Mr. Teerapat Sornchai', title: 'Lecturer', department: 'Sports and Health Science', email: 'teerapat.sornchai@mfu.ac.th', office: 'E4A-212', reviews: null }
     ]
   }
 ];
