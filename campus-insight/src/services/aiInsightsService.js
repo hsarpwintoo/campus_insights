@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BACKEND_URL = "https://campus-insight-b9mp.onrender.com/api/v1";
+const BACKEND_URL = "https://campus-insights-k88b.onrender.com/api/v1";
 
 /**
  * Generates an intelligent, data-driven executive summary from student reviews

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const RENDER_BACKEND_URL = "https://campus-insight-b9mp.onrender.com";
+const RENDER_BACKEND_URL = "https://campus-insights-k88b.onrender.com";
 const PARTNER_CLOUDFLARE_URL = "https://advising-platform.aron078.workers.dev";
 const CAMPUS_INSIGHT_KEY = import.meta.env.VITE_PARTNER_API_KEY;
 

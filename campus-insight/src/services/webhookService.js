@@ -1,4 +1,4 @@
-const RENDER_BACKEND_URL = "https://campus-insight-b9mp.onrender.com/api/v1";
+const RENDER_BACKEND_URL = "https://campus-insights-k88b.onrender.com/api/v1";
 
 // 1. Health Check via Render Backend Proxy (Bypasses Browser CORS)
 export async function checkAdvisingHealth() {
